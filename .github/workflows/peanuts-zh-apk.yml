@@ -1,0 +1,102 @@
+# Fork-only test package. Never publish a release or install on a device.
+name: Peanuts Native zh-CN test APK
+
+on:
+  push:
+    branches: [zh-cn/android]
+    paths:
+      - '.github/workflows/peanuts-zh-apk.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: peanuts-zh-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    if: github.repository == 'Fuck996/peanuts-native' && github.ref == 'refs/heads/zh-cn/android'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.14'
+      - uses: actions/setup-dotnet@2016bd2012dba4e32de620c46fe006a3ac9f0602 # v5.0.1
+        with:
+          dotnet-version: '10.0.115'
+
+      - name: Set up Android build tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends zsh cmake ninja-build zlib1g-dev
+          python -m pip install fonttools==4.61.1
+          android_sdk="${ANDROID_SDK_ROOT:-${ANDROID_HOME:?Android SDK is missing}}"
+          "${android_sdk}/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$android_sdk" \
+            'platforms;android-36' 'build-tools;36.0.0' 'ndk;28.2.13676358' 'cmake;3.22.1'
+          echo "ANDROID_HOME=$android_sdk" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$android_sdk" >> "$GITHUB_ENV"
+          echo "ANDROID_NDK_HOME=$android_sdk/ndk/28.2.13676358" >> "$GITHUB_ENV"
+          echo "JAVA_HOME=${JAVA_HOME_17_X64:?JDK 17 is missing}" >> "$GITHUB_ENV"
+          echo "$JAVA_HOME_17_X64/bin" >> "$GITHUB_PATH"
+
+      - name: Check localization and build the real on-device packer
+        shell: bash
+        run: |
+          set -euo pipefail
+          python peanuts/tests/test_zh_catalog.py
+          zsh peanuts/scripts/ondevice-stage.sh "$RUNNER_TEMP/peanuts-stage" all
+
+      - name: Assemble Peanuts Native test APK
+        shell: bash
+        working-directory: android/app
+        run: |
+          set -euo pipefail
+          printf '\ndistributionSha256Sum=bd71102213493060956ec229d946beee57158dbd89d0e62b91bca0fa2c5f3531\n' >> gradle/wrapper/gradle-wrapper.properties
+          ./gradlew --no-daemon -PnxApp=peanuts -PnxAppId=peanutszh \
+            "-PnxLabel=Peanuts Native" "-PnxPackStage=$RUNNER_TEMP/peanuts-stage/stage" apk
+
+      - name: Verify package, signing, and bundled packer
+        shell: bash
+        run: |
+          set -euo pipefail
+          apk=android/app/out/nxnative-android-peanuts.apk
+          tools="$ANDROID_SDK_ROOT/build-tools/36.0.0"
+          "$tools/apksigner" verify --verbose --print-certs "$apk"
+          "$tools/aapt" dump badging "$apk" > "$RUNNER_TEMP/peanuts-badging.txt"
+          grep -F "package: name='dev.nxnative.android.peanutszh'" "$RUNNER_TEMP/peanuts-badging.txt"
+          grep -Fx "application-label:'Peanuts Native'" "$RUNNER_TEMP/peanuts-badging.txt"
+          python peanuts/scripts/check-apk-holes.py "$apk"
+          python - "$apk" <<'PY'
+          import sys, zipfile
+          with zipfile.ZipFile(sys.argv[1]) as apk:
+              entries = set(apk.namelist())
+              required = {
+                  'lib/arm64-v8a/libnxhost.so',
+                  'lib/arm64-v8a/libnximport.so',
+                  'lib/arm64-v8a/libnxpack.so',
+                  'lib/arm64-v8a/libdmsh_xlate.so',
+                  'lib/arm64-v8a/libpython3.14.so',
+                  'assets/pack/python.zip',
+                  'assets/pack/tools.zip',
+              }
+              assert required <= entries, f"Missing native files: {required - entries}"
+              assert not any(path.lower().endswith('/lossless.dll') or path.lower() == 'lossless.dll' for path in entries)
+          PY
+          mkdir -p dist
+          cp "$apk" dist/Peanuts-Native-zh-CN-test.apk
+          (cd dist && sha256sum Peanuts-Native-zh-CN-test.apk > SHA256SUMS)
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: Peanuts-Native-zh-CN-test
+          path: dist/
+          if-no-files-found: error
+          retention-days: 14
