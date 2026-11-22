@@ -1,5 +1,7 @@
 package dev.nxnative.android;
 
+import static dev.peanuts.i18n.L10n.tr;   // PEANUTS: display-only Simplified Chinese
+
 import android.app.AlertDialog;
 import android.os.Handler;
 import android.os.Looper;
@@ -69,10 +71,10 @@ final class UserPicker {
         List<Integer> idx = new ArrayList<>(); List<String> labels = new ArrayList<>();
         for (int i = 0; i < r.names.length && i < r.offered.length; i++) {
             if (r.offered[i] == 0) continue;
-            idx.add(i); labels.add(r.names[i] + (i == r.def ? "  ·  current" : ""));
+            idx.add(i); labels.add(r.names[i] + (i == r.def ? tr("  ·  current") : ""));   // PEANUTS: translate display text
         }
-        AlertDialog d = new PadFocus.Builder(a).setTitle("Select a user").setItems(labels.toArray(new String[0]), (x, w) -> finish(r, idx.get(w)))
-                .setNegativeButton("Cancel", (x, w) -> finish(r, -1)).setCancelable(true).create();
+        AlertDialog d = new PadFocus.Builder(a).setTitle(tr("Select a user")).setItems(labels.toArray(new String[0]), (x, w) -> finish(r, idx.get(w)))   // PEANUTS: translate display text
+                .setNegativeButton(tr("Cancel"), (x, w) -> finish(r, -1)).setCancelable(true).create();   // PEANUTS: translate display text
         d.setCanceledOnTouchOutside(false);
         d.setOnCancelListener(x -> finish(r, -1));   // Back
         r.dialog = d;

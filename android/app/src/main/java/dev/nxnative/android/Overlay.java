@@ -1,5 +1,7 @@
 package dev.nxnative.android;
 
+import static dev.peanuts.i18n.L10n.tr;   // PEANUTS: display-only Simplified Chinese
+
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
@@ -70,14 +72,16 @@ final class Overlay {
     /** The master switch and, below it, one switch per item (main screen dialog, in-game settings) */
     static void rows(Context c, LinearLayout box, String masterNote) {
         CheckBox master = new CheckBox(c);
-        master.setText("Show the overlay over the game" + (masterNote != null ? masterNote : ""));
+        master.setText(tr("Show the overlay over the game") + (masterNote != null ? tr(masterNote) : ""));   // PEANUTS: translate display text
+        master.setTag("peanuts-overlay-master");   // PEANUTS: translate display text
         master.setChecked(Prefs.overlay(c));
         box.addView(master);
         List<CheckBox> items = new ArrayList<>();
         int indent = Math.round(24 * c.getResources().getDisplayMetrics().density);
         for (String[] it : ITEMS) {
             CheckBox b = new CheckBox(c);
-            b.setText(it[1]);
+            b.setText(tr(it[1]));   // PEANUTS: translate display text
+            b.setTag("peanuts-overlay-item:" + it[0]);   // PEANUTS: translate display text
             b.setChecked(Prefs.overlayItem(c, it[0]));
             b.setEnabled(master.isChecked());
             b.setOnCheckedChangeListener((v, on) -> Prefs.overlayItem(c, it[0], on));

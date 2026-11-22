@@ -1,5 +1,8 @@
 package dev.nxnative.android;
 
+import static dev.peanuts.i18n.L10n.tr;   // PEANUTS: zh-CN display text.
+import static dev.peanuts.i18n.BuildZh.text;
+
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.ComponentName;
@@ -218,7 +221,7 @@ final class Ondevice {
             tc.addView(title);
             top.addView(tc, Ui.weight());
             // ⋯: a listed game's own Manage (Game settings, saves, packs ... and Preparing, which leads here: manageJob); a game not listed yet: the job's
-            more = Ui.more(a, "Manage", v -> { Game g = job != null ? listedGame(job) : null; if (g != null) a.manageGame(g); else manage(); });
+            more = Ui.more(a, tr("Manage"), v -> { Game g = job != null ? listedGame(job) : null; if (g != null) a.manageGame(g); else manage(); });   // PEANUTS: zh-CN display text.
             LinearLayout.LayoutParams mp = (LinearLayout.LayoutParams) more.getLayoutParams();
             mp.leftMargin = dp(8);
             top.addView(more, mp);
@@ -237,18 +240,18 @@ final class Ondevice {
             go.setPadding(dp(12), 0, dp(12), 0);   // "Prepare again" fits half a narrow card
             go.setMinHeight(dp(56));
             go.setMinimumHeight(dp(56));
-            play = Ui.action(a, R.drawable.ic_play, "Play", Ui.Kind.PRIMARY, v -> play());
+            play = Ui.action(a, R.drawable.ic_play, tr("Play"), Ui.Kind.PRIMARY, v -> play());   // PEANUTS: zh-CN display text.
             Ui.add(card, Ui.pair(a, go, play), 16);
             // a heat pause (PackPolicy): the phone may report heat it does not have (a thermal HAL that says SEVERE on a cool handheld, GitHub #38)
-            goOn = Ui.button(a, "Go on anyway", Ui.Kind.SOFT, v -> goOnAnyway("launcher"));
+            goOn = Ui.button(a, tr("Go on anyway"), Ui.Kind.SOFT, v -> goOnAnyway("launcher"));
             goOn.setVisibility(View.GONE);
             Ui.add(card, goOn, 8);
             // a failed job whose check can be relaxed (PrepareText.FIX_ANYWAY): asked first, with what may go wrong
-            anyway = Ui.button(a, "Try anyway…", Ui.Kind.SOFT, v -> tryAnyway());
+            anyway = Ui.button(a, tr("Try anyway…"), Ui.Kind.SOFT, v -> tryAnyway());   // PEANUTS: zh-CN display text.
             anyway.setVisibility(View.GONE);
             Ui.add(card, anyway, 8);
             // a failed job that this app build cannot finish (PrepareText.FIX_UPDATE): the release app's updater, where it has one
-            update = Ui.button(a, "Check for updates", Ui.Kind.SOFT, v -> Updater.checkNow(a));
+            update = Ui.button(a, tr("Check for updates"), Ui.Kind.SOFT, v -> Updater.checkNow(a));   // PEANUTS: zh-CN display text.
             update.setVisibility(View.GONE);
             Ui.add(card, update, 8);
             dev.peanuts.ui.BuildLogUi.card(a, card, () -> job == null ? null : new String[] {job.titleId(), job.name(), job.state()});   // PEANUTS: Share build log while the job has failed or is paused
@@ -387,8 +390,8 @@ final class Ondevice {
             String notIncluded = Profile.missing(job.titleId(), job.name());
             boolean failed = "failed".equals(st);
             String unsupported = a.getString(R.string.not_supported_yet);   // PEANUTS: match the Home filter
-            title.setText((metaLine != null ? metaLine + " \u00b7 " : "") + (notIncluded != null ? unsupported : "done".equals(st) ? "Prepared" : "pending".equals(st) ? "Ready to prepare" : failed ? "Could not prepare"
-                    : "paused".equals(st) ? "Paused" : "Preparing") + (job.tryAnyway() ? " · tried anyway" : "") + sim);
+            title.setText((metaLine != null ? metaLine + " \u00b7 " : "") + (notIncluded != null ? unsupported : "done".equals(st) ? tr("Prepared") : "pending".equals(st) ? tr("Ready to prepare") : failed ? tr("Could not prepare")
+                    : "paused".equals(st) ? tr("Paused") : tr("Preparing")) + (job.tryAnyway() ? tr(" · tried anyway") : "") + sim);
             status.setText(notIncluded != null ? notIncluded : failed ? job.failureSummary() : job.statusText(alive));   // PEANUTS: show the tool error beside Share build log
             int pct = (int) Math.round(job.overall() * 1000);
             bar.setProgress(pct);
@@ -400,7 +403,7 @@ final class Ondevice {
             boolean running = alive && ("running".equals(st) || "paused".equals(st) && !"user".equals(job.reason()) && !"timeout".equals(job.reason()));
             boolean noFix = notIncluded != null || failed && PrepareText.FIX_NONE.equals(job.fix());   // nothing in this app can make it work: no Retry that cannot succeed
             boolean broken = failed && !alive && job.brokenApk(Job.installed(a));   // this app build cannot do it: no Retry until another install; an older pack may still play
-            go.setText(running ? "Pause" : "done".equals(st) && !job.apkChanged() ? "Prepare again" : failed ? "Retry" : "pending".equals(st) ? "Start" : "Resume");
+            go.setText(running ? tr("Pause") : "done".equals(st) && !job.apkChanged() ? tr("Prepare again") : failed ? tr("Retry") : "pending".equals(st) ? tr("Start") : tr("Resume"));   // PEANUTS: zh-CN display text.
             go.setEnabled(!"done".equals(st) || job.apkChanged());
             go.setVisibility(noFix || broken ? View.GONE : View.VISIBLE);
             update.setVisibility(broken && Updater.available(a) ? View.VISIBLE : View.GONE);
@@ -415,8 +418,8 @@ final class Ondevice {
         void tryAnyway() {
             Job j = job;
             if (j == null || alive()) return;
-            new PadFocus.Builder(a).setTitle("Try anyway?").setMessage(PrepareText.ANYWAY_WARNING)
-                    .setPositiveButton("Try anyway", (d, w) -> {
+            new PadFocus.Builder(a).setTitle(tr("Try anyway?")).setMessage(tr(PrepareText.ANYWAY_WARNING))   // PEANUTS: zh-CN display text.
+                    .setPositiveButton(tr("Try anyway"), (d, w) -> {
                         if (a.needAccess(j.dump())) return;
                         try {
                             j.tryAnyway(true);
@@ -428,7 +431,7 @@ final class Ondevice {
                         show();
                         startService(j);
                     })
-                    .setNegativeButton("Cancel", null).show();
+                    .setNegativeButton(tr("Cancel"), null).show();   // PEANUTS: zh-CN display text.
         }
 
         // A listed game whose shaders are being updated plays with its older library of the same ABI meanwhile (Pack.playableLibrary), as its own card did: the list
@@ -465,7 +468,7 @@ final class Ondevice {
             a.refresh();
             long[] miss = j.shadersMissing();   // Try anyway on a game version the profile was not made from: say briefly what it lacks and which version has it all
             Profile prof = Profile.of(j.titleId());
-            android.widget.Toast.makeText(a, g.name + " is ready to play." + (miss[0] > 0 && prof != null ? " " + PrepareText.missingShadersText(miss[0], miss[1], prof.supportedShort()) : ""),
+            android.widget.Toast.makeText(a, text(tr("%s is ready to play."), g.name) + (miss[0] > 0 && prof != null ? " " + PrepareText.missingShadersText(miss[0], miss[1], prof.supportedShort()) : ""),   // PEANUTS: zh-CN display text.
                     android.widget.Toast.LENGTH_LONG).show();
         }
 
@@ -505,7 +508,7 @@ final class Ondevice {
         /** anyBuild: Try anyway for a dump of a build this app does not list (asked first: untested); a job beside the dump that was tried anyway keeps it */
         void picked(File dump, boolean start, File packOverride, boolean again, boolean card, boolean anyBuild) {
             if (a.needAccess(dump)) return;
-            android.widget.Toast.makeText(a, "Checking " + dump.getName() + "…", android.widget.Toast.LENGTH_SHORT).show();
+            android.widget.Toast.makeText(a, text(tr("Checking %s…"), dump.getName()), android.widget.Toast.LENGTH_SHORT).show();   // PEANUTS: zh-CN display text.
             new Thread(() -> {
                 Found f = new Found();
                 boolean any = anyBuild;
@@ -542,7 +545,7 @@ final class Ondevice {
             if (!r.ok()) {
                 if (card) return;
                 if (r.otherBuild) untested(r, start, packOverride, again);   // a build this app does not list: say so, and offer Try anyway
-                else Ui.explain(a, "Cannot prepare this dump", r.error, r.detail).setPositiveButton("OK", null).show();
+                else Ui.explain(a, tr("Cannot prepare this dump"), r.error, r.detail).setPositiveButton(tr("OK"), null).show();   // PEANUTS: zh-CN display text.
                 show();
                 return;
             }
@@ -557,14 +560,14 @@ final class Ondevice {
                         job = j;
                         show();
                         if (start) startService(j);
-                        else confirm("Resume preparing?", j.statusText(false) + "\n\nIt goes on from where it stopped.", "Resume", () -> startService(j));
+                        else confirm(tr("Resume preparing?"), j.statusText(false) + tr("\n\nIt goes on from where it stopped."), tr("Resume"), () -> startService(j));   // PEANUTS: zh-CN display text.
                         return;
                     }
                     if (!s.equals("done") && !s.isEmpty()) {   // unfinished, for another pack folder: never written over (its job.json is this dump's)
                         if (card) return;   // an automatic update leaves it to the user
-                        Ui.explain(a, "Preparing is not finished", "This dump is already being prepared into another pack folder. Resume it from its card, or delete its "
+                        Ui.explain(a, tr("Preparing is not finished"), "This dump is already being prepared into another pack folder. Resume it from its card, or delete its "   // PEANUTS: zh-CN display text.
                                 + "working files (⋯ › Delete working files) before preparing into another folder.", j.statusText(false) + "\n\n" + j.errorDetail())
-                                .setPositiveButton("OK", null).show();
+                                .setPositiveButton(tr("OK"), null).show();
                         Job.remember(a, f.existing);
                         job = j;
                         show();
@@ -594,16 +597,16 @@ final class Ondevice {
                         : code ? "Rewriting the game's code (a few minutes, in the background). Shaders up to date: nothing to translate."
                         : shadersText(pd, r.titleId);
                 String why = (f.build != null ? f.build + "\n\n" : again && code ? "The pack's game code was made by other tools than this app's.\n\n" : "") + (lp != null ? lp + "\n\n" : "");
-                Ui.explain(a, code ? "Update the pack?" : "Prepare shaders?", what, why + "Pack: " + pd)
-                        .setPositiveButton(code ? "Prepare again" : "Prepare", (d, w) -> redo.run())
-                        .setNeutralButton("Pick another pack folder", (d, w) -> Folders.pickPack(a))
-                        .setNegativeButton("Cancel", null).show();
+                Ui.explain(a, code ? tr("Update the pack?") : tr("Prepare shaders?"), what, why + "Pack: " + pd)   // PEANUTS: zh-CN display text.
+                        .setPositiveButton(code ? tr("Prepare again") : tr("Prepare"), (d, w) -> redo.run())
+                        .setNeutralButton(tr("Pick another pack folder"), (d, w) -> Folders.pickPack(a))
+                        .setNegativeButton(tr("Cancel"), null).show();
                 return;
             }
             Profile prof = Profile.of(r.titleId);   // DumpCheck refused a dump without one
             // what it makes, how long, and the space it needs, plainly; where the files go is in Details
-            String text = String.format(Locale.getDefault(), "%s, %d DLC.\n\nThe app makes the game's pack from your dump: rewrites the game's code (a few minutes) and translates %,d shaders (%s in the background, best on the charger). You can pause any time.\n\nNeeds about 1.5 GB of free space (%.1f GB free now).",
-                    (r.version == 0 ? "Base game" : "Update " + r.version) + (r.untested ? " (untested version: Try anyway)" : ""), r.dlc, prof.shaderTotal,
+            String text = text(tr("%s, %d DLC.\n\nThe app makes the game's pack from your dump: rewrites the game's code (a few minutes) and translates %,d shaders (%s in the background, best on the charger). You can pause any time.\n\nNeeds about 1.5 GB of free space (%.1f GB free now)."),   // PEANUTS: zh-CN display text.
+                    (r.version == 0 ? tr("Base game") : text(tr("Update %s"), r.version)) + (r.untested ? tr(" (untested version: Try anyway)") : ""), r.dlc, prof.shaderTotal,
                     ShaderLibs.jobMinutesText(prof.shaderTotal), r.free / 1073741824.0);
             String where = "Dump: " + r.dump + "\nWorking files: " + r.work + "\nPack: " + AppStorage.pack(a, r.titleId)
                     + (r.build >= 0 && r.build != r.version ? "\nIts code is " + prof.buildName(r.build) : "") + (r.buildIds.isEmpty() ? "" : "\nBuild IDs: " + r.buildIds);
@@ -617,7 +620,7 @@ final class Ondevice {
                     show();
                     startService(j);
                 } catch (Exception e) {
-                    a.error("Cannot start: " + e.getMessage());
+                    a.error(text(tr("Cannot start: %s"), e.getMessage()));   // PEANUTS: zh-CN display text.
                 }
             };
             if (start) go.run();
@@ -634,11 +637,11 @@ final class Ondevice {
             box.setOrientation(LinearLayout.VERTICAL);
             Ui.add(box, Ui.body(a, text), 0);
             Ui.add(box, Ui.details(a, where), 8);
-            Ui.add(box, Ui.small(a, "Have a pack made elsewhere (on a computer, or exported from another phone)?"), 16);
+            Ui.add(box, Ui.small(a, tr("Have a pack made elsewhere (on a computer, or exported from another phone)?")), 16);   // PEANUTS: zh-CN display text.
             AlertDialog[] d = new AlertDialog[1];
-            Ui.add(box, Ui.button(a, "Use an existing pack…", Ui.Kind.SOFT, v -> { d[0].dismiss(); a.pickPackFor(r.dump, r.titleId); }), 8);
-            Ui.add(box, Ui.button(a, "Import pack…", Ui.Kind.SOFT, v -> { d[0].dismiss(); PackUi.importPick(a, a.cardFor(r.dump, r.titleId)); }), 8);
-            d[0] = Ui.sheet(a, "Prepare " + prof.name + "?", box).setPositiveButton("Prepare", (x, w) -> go.run()).setNegativeButton("Cancel", null).show();
+            Ui.add(box, Ui.button(a, tr("Use an existing pack…"), Ui.Kind.SOFT, v -> { d[0].dismiss(); a.pickPackFor(r.dump, r.titleId); }), 8);
+            Ui.add(box, Ui.button(a, tr("Import pack…"), Ui.Kind.SOFT, v -> { d[0].dismiss(); PackUi.importPick(a, a.cardFor(r.dump, r.titleId)); }), 8);
+            d[0] = Ui.sheet(a, text(tr("Prepare %s?"), prof.name), box).setPositiveButton(tr("Prepare"), (x, w) -> go.run()).setNegativeButton(tr("Cancel"), null).show();
         }
 
         /** A pack that is already there (PackCheck): ready (a done job pointing at it, the game added to the list), or a job that redoes its code, its shaders or both */
@@ -655,7 +658,7 @@ final class Ondevice {
                 Game.put(a, g);   // one card per game (GameList)
                 a.refresh();
                 show();
-                new PadFocus.Builder(a).setTitle("Ready to play").setMessage("Its pack fits: nothing needs preparing.\n\nPack: " + packDir).setPositiveButton("OK", null).show();
+                new PadFocus.Builder(a).setTitle(tr("Ready to play")).setMessage(text(tr("Its pack fits: nothing needs preparing.\n\nPack: %s"), packDir)).setPositiveButton(tr("OK"), null).show();   // PEANUTS: zh-CN display text.
             } catch (Exception e) {
                 a.error("Cannot use " + packDir + ": " + e.getMessage());
             }
@@ -667,14 +670,14 @@ final class Ondevice {
          */
         void untested(DumpCheck.Result r, boolean start, File packOverride, boolean again) {
             Profile p = Profile.of(r.titleId);
-            Ui.explain(a, "Untested version" + (p != null ? " of " + p.name : ""), r.error + "\n\n" + PrepareText.ANYWAY_WARNING, r.detail)
-                    .setPositiveButton("Try anyway", (d, w) -> picked(r.dump, start, packOverride, again, false, true))
-                    .setNeutralButton("Use a pack…", (d, w) -> a.pickPackFor(r.dump, r.titleId))
-                    .setNegativeButton("Cancel", null).show();
+            Ui.explain(a, p == null ? tr("Untested version") : text(tr("Untested version of %s"), p.name), r.error + "\n\n" + tr(PrepareText.ANYWAY_WARNING), r.detail)   // PEANUTS: zh-CN display text.
+                    .setPositiveButton(tr("Try anyway"), (d, w) -> picked(r.dump, start, packOverride, again, false, true))
+                    .setNeutralButton(tr("Use a pack…"), (d, w) -> a.pickPackFor(r.dump, r.titleId))
+                    .setNegativeButton(tr("Cancel"), null).show();
         }
 
         void confirm(String t, String msg, String yes, Runnable r) {
-            new PadFocus.Builder(a).setTitle(t).setMessage(msg).setPositiveButton(yes, (d, w) -> r.run()).setNegativeButton("Cancel", null).show();
+            new PadFocus.Builder(a).setTitle(t).setMessage(msg).setPositiveButton(yes, (d, w) -> r.run()).setNegativeButton(tr("Cancel"), null).show();   // PEANUTS: zh-CN display text.
         }
 
         void startService(Job j) {
@@ -698,7 +701,7 @@ final class Ondevice {
 
         void goOrPause() {
             if (job == null) return;
-            if (go.getText().toString().equals("Pause")) { pauseJob("launcher"); return; }
+            if (go.getText().toString().equals(tr("Pause"))) { pauseJob("launcher"); return; }
             // PEANUTS: a finished job of an earlier app version (its shaders or code are another version's: the card comes back with "Resume" after an update). Its
             // game is built again from this fork's build sheet, which keeps the pack's note, its companion and its builds with mods in step (dev.peanuts.build.Prepare);
             // upstream's own job from here made the shaders again and nothing else
@@ -734,34 +737,34 @@ final class Ondevice {
             boolean running = alive() && ("running".equals(j.state()) || "paused".equals(j.state()) && !"user".equals(j.reason()) && !"timeout".equals(j.reason()));
             LinearLayout box = new LinearLayout(a);
             box.setOrientation(LinearLayout.VERTICAL);
-            TextView info = Ui.small(a, j.statusText(alive()) + "\n\nDump: " + j.dump() + "\nWorking files: " + j.dir() + "\nPack: " + j.pack() + "\nLogs: " + new File(j.dir(), "logs"));
+            TextView info = Ui.small(a, text(tr("%s\n\nDump: %s\nWorking files: %s\nPack: %s\nLogs: %s"), j.statusText(alive()), j.dump(), j.dir(), j.pack(), new File(j.dir(), "logs")));   // PEANUTS: zh-CN display text.
             info.setTextIsSelectable(true);
             box.addView(info);
             android.app.AlertDialog[] d = new android.app.AlertDialog[1];
             View line = new View(a);
             line.setBackgroundColor(Ui.col(a, R.color.bn_card_stroke));
             Ui.add(box, line, 20, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(1)));
-            Ui.add(box, Ui.button(a, "Share build log", Ui.Kind.QUIET, v -> { d[0].dismiss(); dev.peanuts.ui.BuildLogUi.share(a, j.titleId(), j.name()); }), 14, Ui.wrap());   // PEANUTS: Share build log
-            if (running) Ui.add(box, Ui.small(a, "Pause first to forget or delete."), 14);
-            Button f = Ui.button(a, "Forget this job…", Ui.Kind.QUIET, v -> { d[0].dismiss(); forget(); });
+            Ui.add(box, Ui.button(a, tr("Share build log"), Ui.Kind.QUIET, v -> { d[0].dismiss(); dev.peanuts.ui.BuildLogUi.share(a, j.titleId(), j.name()); }), 14, Ui.wrap());   // PEANUTS: Share build log
+            if (running) Ui.add(box, Ui.small(a, tr("Pause first to forget or delete.")), 14);
+            Button f = Ui.button(a, tr("Forget this job…"), Ui.Kind.QUIET, v -> { d[0].dismiss(); forget(); });
             f.setEnabled(!running);
             Ui.add(box, f, 10, Ui.wrap());
-            Button w = Ui.button(a, "Delete working files…", Ui.Kind.DANGER, v -> { d[0].dismiss(); deleteWork(j, false); });
+            Button w = Ui.button(a, tr("Delete working files…"), Ui.Kind.DANGER, v -> { d[0].dismiss(); deleteWork(j, false); });
             w.setEnabled(!running);
             Ui.add(box, w, 8, Ui.wrap());
             if (ownPack(j) != null) {
-                Button pk = Ui.button(a, "Delete the prepared pack too…", Ui.Kind.DANGER, v -> { d[0].dismiss(); deleteWork(j, true); });
+                Button pk = Ui.button(a, tr("Delete the prepared pack too…"), Ui.Kind.DANGER, v -> { d[0].dismiss(); deleteWork(j, true); });   // PEANUTS: zh-CN display text.
                 pk.setEnabled(!running);
                 Ui.add(box, pk, 8, Ui.wrap());
             }
-            d[0] = Ui.sheet(a, "Preparing " + j.name(), box).setPositiveButton("Done", null).show();
+            d[0] = Ui.sheet(a, text(tr("Preparing %s"), j.name()), box).setPositiveButton(tr("Done"), null).show();   // PEANUTS: zh-CN display text.
         }
 
         void forget() {
             if (job == null) return;
-            Ui.confirmDanger(a, "Forget this job?", "Deleted: nothing. The screen stops showing the job.\n\nKept: its files in " + job.dir()
+            Ui.confirmDanger(a, tr("Forget this job?"), "Deleted: nothing. The screen stops showing the job.\n\nKept: its files in " + job.dir()   // PEANUTS: zh-CN display text.
                     + ", the pack, your dump and your saves. Picking the same dump again finds the job.\n\nThe split's kept progress (a copy in the app's own storage) "
-                    + "is deleted when a job of another game starts; until then an unfinished split resumes from it.", "Forget", () -> {
+                    + "is deleted when a job of another game starts; until then an unfinished split resumes from it.", tr("Forget"), () -> {
                 Job.remember(a, null);
                 job = null;
                 show();
@@ -800,8 +803,8 @@ final class Ondevice {
             m.append("\n\nKept: your dump (" + j.dump() + ") and your saves").append(save != null ? " (" + save + ")" : "")
                     .append(pk == null ? ", and the pack (" + j.pack() + ")" : "").append(". Saves are never deleted here.");
             m.append(pk != null ? "\n\nThe game will not start until it is prepared again (about 30-45 minutes)." : "\n\nA new Prepare starts from the beginning.");
-            Ui.confirmDanger(a, pk != null ? "Delete the prepared pack?" : "Delete working files?", m, "Delete", () -> {
-                android.app.AlertDialog wait = new android.app.AlertDialog.Builder(a).setMessage("Deleting…").setCancelable(false).show();
+            Ui.confirmDanger(a, pk != null ? tr("Delete the prepared pack?") : tr("Delete working files?"), m, tr("Delete"), () -> {   // PEANUTS: zh-CN display text.
+                android.app.AlertDialog wait = new android.app.AlertDialog.Builder(a).setMessage(tr("Deleting…")).setCancelable(false).show();
                 new Thread(() -> {
                     for (File g : gone) Job.deleteTree(g);
                     Job.deleteTree(j.splitScan(a));   // the split's kept scan results, in the app's own storage
@@ -812,7 +815,7 @@ final class Ondevice {
                         job = null;
                         show();
                         a.refresh();
-                        android.widget.Toast.makeText(a, "Deleted. Your dump and saves are untouched.", android.widget.Toast.LENGTH_LONG).show();
+                        android.widget.Toast.makeText(a, tr("Deleted. Your dump and saves are untouched."), android.widget.Toast.LENGTH_LONG).show();   // PEANUTS: zh-CN display text.
                     });
                 }, "nxpack-delete").start();
             });

@@ -1,5 +1,7 @@
 package dev.nxnative.android;
 
+import static dev.peanuts.i18n.L10n.tr;   // PEANUTS: display-only Simplified Chinese
+
 import android.app.AlertDialog;
 import android.os.Handler;
 import android.os.Looper;
@@ -124,9 +126,9 @@ final class TextInput {
 
         StringBuilder msg = new StringBuilder(r.sub);
         if (!r.guide.isEmpty()) msg.append(msg.length() > 0 ? "\n" : "").append(r.guide);
-        if (min > 0) msg.append(msg.length() > 0 ? "\n" : "").append("At least ").append(min).append(min == 1 ? " character." : " characters.");
-        AlertDialog.Builder b = new PadFocus.Builder(a).setTitle(r.title.isEmpty() ? "Enter text" : r.title).setView(box)
-                .setPositiveButton("OK", null).setNegativeButton("Cancel", (x, w) -> finish(r, null)).setCancelable(true);
+        if (min > 0) msg.append(msg.length() > 0 ? "\n" : "").append(String.format(tr(min == 1 ? "At least %d character." : "At least %d characters."), min));   // PEANUTS: translate display text
+        AlertDialog.Builder b = new PadFocus.Builder(a).setTitle(r.title.isEmpty() ? tr("Enter text") : r.title).setView(box)   // PEANUTS: translate display text
+                .setPositiveButton(tr("OK"), null).setNegativeButton(tr("Cancel"), (x, w) -> finish(r, null)).setCancelable(true);   // PEANUTS: translate display text
         if (msg.length() > 0) b.setMessage(msg);
         AlertDialog d = b.create();
         d.setCanceledOnTouchOutside(false);

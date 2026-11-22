@@ -1,5 +1,7 @@
 package dev.peanuts.ui;
 
+import static dev.peanuts.i18n.L10n.tr;
+
 import android.app.Activity;
 import android.app.Presentation;
 import android.content.Context;
@@ -412,9 +414,9 @@ final class BottomPanel extends Presentation {
         setLine(cardLine1, cardLine1Row, l1);
         setLine(cardLine2, cardLine2, l2);
         cardPrimary.setVisibility(k.primary != null ? View.VISIBLE : View.GONE);
-        if (k.primary != null) { cardPrimary.setText(k.primaryLabel); setKey(cardPrimary, pad ? "A" : null, k.primaryIcon); }
+        if (k.primary != null) { cardPrimary.setText(tr(k.primaryLabel)); setKey(cardPrimary, pad ? "A" : null, k.primaryIcon); }
         cardSecond.setVisibility(k.second != null ? View.VISIBLE : View.GONE);
-        if (k.second != null) cardSecond.setText(k.secondLabel);
+        if (k.second != null) cardSecond.setText(tr(k.secondLabel));
         cardBox.setAlpha(1f);
         cardBox.setTranslationX(0f);
         cardBox.setTranslationY(0f);
@@ -444,7 +446,7 @@ final class BottomPanel extends Presentation {
         shownBuild = b;
         swap(buildStatus, b.step);
         buildStatus.setTextColor(PUi.col(c, b.failed ? R.color.bn_danger : R.color.bn_accent));
-        buildBody.setText(b.body);
+        buildBody.setText(tr(b.body));
         buildBar.setVisibility(b.failed ? View.GONE : View.VISIBLE);
         buildBar.setIndeterminate(b.indeterminate);
         if (!b.indeterminate) Motion.progress(buildBar, b.percent, fresh);
@@ -567,7 +569,7 @@ final class BottomPanel extends Presentation {
             ok.setBackground(PUi.round(PUi.col(c, R.color.bn_leaf), PUi.dp(c, 999), 0, 0));
             ok.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
             cardMark.addView(ok, new LinearLayout.LayoutParams(PUi.dp(c, 22), PUi.dp(c, 22)));
-            cardState.setText(k.state);
+            cardState.setText(tr(k.state));
             LinearLayout.LayoutParams lp = PUi.wrap();
             lp.leftMargin = PUi.dp(c, 8);
             cardMark.addView(cardState, lp);
@@ -602,10 +604,10 @@ final class BottomPanel extends Presentation {
         Calendar now = Calendar.getInstance(), then = Calendar.getInstance();
         then.setTimeInMillis(at);
         int days = daysBetween(then, now);
-        if (days <= 0) return "Last played today";
-        if (days == 1) return "Last played yesterday";
-        if (days < 7) return "Last played " + days + " days ago";
-        return "Last played on " + java.text.DateFormat.getDateInstance(java.text.DateFormat.MEDIUM).format(new java.util.Date(at));
+        if (days <= 0) return tr("Last played today");
+        if (days == 1) return tr("Last played yesterday");
+        if (days < 7) return String.format(java.util.Locale.ROOT, tr("Last played %d days ago"), days);
+        return String.format(java.util.Locale.ROOT, tr("Last played on %s"), java.text.DateFormat.getDateInstance(java.text.DateFormat.MEDIUM).format(new java.util.Date(at)));
     }
 
     private static int daysBetween(Calendar a, Calendar b) {

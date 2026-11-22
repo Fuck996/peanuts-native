@@ -1,5 +1,7 @@
 package dev.peanuts.overlay;
 
+import static dev.peanuts.i18n.L10n.tr;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.app.AlertDialog;
@@ -35,7 +37,8 @@ public final class HudSettings {
             {"tag", "Build tag"},
             {"memory", "Memory: the game's and the phone's"},
     };
-    private static final String MASTER = "Show the overlay over the game";
+    private static final String MASTER_TAG = "peanuts-overlay-master";
+    private static final String ITEM_TAG = "peanuts-overlay-item:";
 
     /** The preset the row names before the player picked one: every item is on until then (Prefs.overlayItem and Hud.item default to true), which is Full */
     static final String DEFAULT_PRESET = "full";
@@ -71,7 +74,7 @@ public final class HudSettings {
             boolean custom = "custom".equals(p.getString(Hud.PRESET, DEFAULT_PRESET));
             for (int i = 0; i < box.getChildCount(); i++) {
                 View v = box.getChildAt(i);
-                if (v instanceof CheckBox && !String.valueOf(((CheckBox) v).getText()).startsWith(MASTER)) v.setVisibility(custom ? View.VISIBLE : View.GONE);
+                if (v instanceof CheckBox && !MASTER_TAG.equals(v.getTag())) v.setVisibility(custom ? View.VISIBLE : View.GONE);
             }
         };
         sync[0].run();
@@ -101,7 +104,7 @@ public final class HudSettings {
         float textPx = 14 * dp;
         for (int i = 0; i < box.getChildCount(); i++) {
             View v = box.getChildAt(i);
-            if (v instanceof CheckBox && String.valueOf(((CheckBox) v).getText()).startsWith(MASTER)) {
+            if (v instanceof CheckBox && MASTER_TAG.equals(v.getTag())) {
                 textColor = ((CheckBox) v).getCurrentTextColor();
                 textPx = ((CheckBox) v).getTextSize();
                 break;
@@ -112,7 +115,7 @@ public final class HudSettings {
         name.setTextColor(textColor);
         name.setTextSize(TypedValue.COMPLEX_UNIT_PX, textPx);
         name.setSingleLine(true);
-        name.setText(title);
+        name.setText(tr(title));
         row.addView(name, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         TextView val = new TextView(c);
         val.setTextSize(TypedValue.COMPLEX_UNIT_PX, textPx);
@@ -122,12 +125,12 @@ public final class HudSettings {
         Runnable show = () -> {
             int i = Math.max(0, Arrays.asList(values).indexOf(cur.get()));
             val.setTextColor(0xFFFFD54F);   // the panel's accent (SidePanel.FOCUS), full opacity
-            val.setText(names[i] + " \u203A");
+            val.setText(tr(names[i]) + " \u203A");
         };
         show.run();
-        row.setOnClickListener(v -> new AlertDialog.Builder(c).setTitle(title)
-                .setSingleChoiceItems(names, Math.max(0, Arrays.asList(values).indexOf(cur.get())), (d, w) -> { pick.on(values[w]); show.run(); d.dismiss(); })
-                .setNegativeButton("Cancel", null).show());
+        row.setOnClickListener(v -> new AlertDialog.Builder(c).setTitle(tr(title))
+                .setSingleChoiceItems(dev.peanuts.i18n.L10n.items(names), Math.max(0, Arrays.asList(values).indexOf(cur.get())), (d, w) -> { pick.on(values[w]); show.run(); d.dismiss(); })
+                .setNegativeButton(tr("Cancel"), null).show());
         box.addView(row, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
     }
 
@@ -139,9 +142,9 @@ public final class HudSettings {
             View v = box.getChildAt(i);
             if (!(v instanceof CheckBox)) continue;
             CheckBox b = (CheckBox) v;
-            String text = String.valueOf(b.getText());
-            if (text.startsWith(MASTER)) { b.setChecked(true); continue; }
-            for (String[] l : LABELS) if (l[1].equals(text)) b.setChecked(on.contains(l[0]));
+            Object tag = b.getTag();
+            if (MASTER_TAG.equals(tag)) { b.setChecked(true); continue; }
+            for (String[] l : LABELS) if ((ITEM_TAG + l[0]).equals(tag)) b.setChecked(on.contains(l[0]));
         }
     }
 }

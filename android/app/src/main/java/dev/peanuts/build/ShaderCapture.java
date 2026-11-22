@@ -1,5 +1,7 @@
 package dev.peanuts.build;
 
+import static dev.peanuts.i18n.L10n.tr;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
@@ -63,7 +65,7 @@ public final class ShaderCapture {
         box.setClickable(true);
         box.addView(new ProgressBar(a));
         TextView text = new TextView(a);
-        text.setText("Finishing graphics setup\n\nThis step finishes automatically.");
+        text.setText(tr("Finishing graphics setup\n\nThis step finishes automatically."));
         text.setGravity(Gravity.CENTER);
         text.setTextColor(Color.WHITE);
         text.setTextSize(20);
@@ -71,7 +73,7 @@ public final class ShaderCapture {
         text.setPadding(pad, pad, pad, pad);
         box.addView(text);
         Button cancel = new Button(a);
-        cancel.setText("Cancel");
+        cancel.setText(tr("Cancel"));
         cancel.setOnClickListener(v -> cancel(a));
         box.addView(cancel, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
         root.addView(box, new FrameLayout.LayoutParams(-1, -1));

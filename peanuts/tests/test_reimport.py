@@ -303,7 +303,7 @@ class Wiring(unittest.TestCase):
         ask = sheet[sheet.index('static void importAgain('):sheet.index('static String reimport(')]
         self.assertLess(ask.index('if (p.missing != null)'), ask.index('if (p.lowSpace())'))
         self.assertLess(ask.index('if (p.lowSpace())'), ask.index('"Import again?"'))
-        self.assertIn('if (p.fitsWithoutOld()) b.setNeutralButton("Delete the old file first…", (d, w) -> PUi.confirmDanger(a, "Delete the old .nup first?", Reimport.deleteFirst(p, t.name),', ask,
+        self.assertIn('if (p.fitsWithoutOld()) b.setNeutralButton(tr("Delete the old file first…"), (d, w) -> PUi.confirmDanger(a, "Delete the old .nup first?", Reimport.deleteFirst(p, t.name),', ask,
                       'deleting first is offered only when it makes room, and asks again with its risk')
         self.assertIn('PackNote.without(title.packDir)', sheet)
         lib = (JAVA / 'main/java/dev/peanuts/ui/Library.java').read_text(encoding='utf-8')

@@ -1,5 +1,8 @@
 package dev.peanuts.build;
 
+import static dev.peanuts.i18n.L10n.tr;
+import static dev.peanuts.i18n.BuildZh.text;
+
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -59,7 +62,7 @@ public final class ModBuildService extends Service {
     @Override public void onCreate() {
         super.onCreate();
         nm = getSystemService(NotificationManager.class);
-        nm.createNotificationChannel(new NotificationChannel(CHANNEL, "Building games with mods", NotificationManager.IMPORTANCE_LOW));
+        nm.createNotificationChannel(new NotificationChannel(CHANNEL, tr("Building games with mods"), NotificationManager.IMPORTANCE_LOW));
     }
 
     @Override public IBinder onBind(Intent intent) { return null; }
@@ -150,7 +153,7 @@ public final class ModBuildService extends Service {
 
     private Notification note(int percent, String detail) {
         Intent cancel = new Intent(this, ModBuildService.class).setAction(ACTION_CANCEL);
-        Notification.Builder b = new Notification.Builder(this, CHANNEL).setSmallIcon(android.R.drawable.stat_sys_download).setContentTitle("Building " + name + " with mods")
+        Notification.Builder b = new Notification.Builder(this, CHANNEL).setSmallIcon(android.R.drawable.stat_sys_download).setContentTitle(text(tr("Building %s with mods"), name))
                 .setContentText(detail).setOnlyAlertOnce(true).setOngoing(true).setProgress(100, Math.max(0, Math.min(100, percent)), false)
                 .addAction(new Notification.Action.Builder(null, "Cancel", PendingIntent.getService(this, 1, cancel, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT)).build());
         Intent open = getPackageManager().getLaunchIntentForPackage(getPackageName());
@@ -160,7 +163,7 @@ public final class ModBuildService extends Service {
 
     private Notification done(boolean ok, String message) {
         Notification.Builder b = new Notification.Builder(this, BuildPipeline.endChannel(nm, CHANNEL, !ok && cancelled)).setSmallIcon(ok ? android.R.drawable.stat_sys_download_done : android.R.drawable.stat_notify_error)
-                .setContentTitle(ok ? name + " is ready to play with mods" : "Building " + name + " with mods stopped").setContentText(message)
+                .setContentTitle(ok ? text(tr("%s is ready to play with mods"), name) : text(tr("Building %s with mods stopped"), name)).setContentText(message)
                 .setStyle(new Notification.BigTextStyle().bigText(message)).setAutoCancel(true);
         Intent open = getPackageManager().getLaunchIntentForPackage(getPackageName());
         if (open != null) b.setContentIntent(PendingIntent.getActivity(this, 0, open, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT));

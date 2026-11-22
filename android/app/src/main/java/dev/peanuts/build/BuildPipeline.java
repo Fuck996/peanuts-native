@@ -1,5 +1,8 @@
 package dev.peanuts.build;
 
+import static dev.peanuts.i18n.L10n.tr;
+import static dev.peanuts.i18n.BuildZh.text;
+
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
@@ -64,7 +67,7 @@ public final class BuildPipeline {
      */
     static String endChannel(android.app.NotificationManager nm, String progressChannel, boolean stoppedByUser) {
         if (front || stoppedByUser) return progressChannel;
-        android.app.NotificationChannel c = new android.app.NotificationChannel(CHANNEL_DONE, "Build finished", android.app.NotificationManager.IMPORTANCE_DEFAULT);
+        android.app.NotificationChannel c = new android.app.NotificationChannel(CHANNEL_DONE, tr("Build finished"), android.app.NotificationManager.IMPORTANCE_DEFAULT);
         c.enableVibration(true);
         c.setSound(null, null);
         nm.createNotificationChannel(c);   // no change when it exists already (the user's own settings for it are kept)
@@ -92,8 +95,8 @@ public final class BuildPipeline {
             Log.w(TAG, "BuildService start: " + e);
             LISTENERS.remove(id);
             running = 0;
-            ended(false, "Cannot start the build: " + e.getMessage(), BuildListener.OTHER);
-            if (l != null) MAIN.post(() -> l.done(false, "Cannot start the build: " + e.getMessage(), BuildListener.OTHER));
+            ended(false, text(tr("Cannot start the build: %s"), e.getMessage()), BuildListener.OTHER);
+            if (l != null) MAIN.post(() -> l.done(false, text(tr("Cannot start the build: %s"), e.getMessage()), BuildListener.OTHER));
             return 0;
         }
         dev.peanuts.ctl.Ctl.progress();

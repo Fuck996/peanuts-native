@@ -1,5 +1,7 @@
 package dev.peanuts.ui;
 
+import static dev.peanuts.i18n.L10n.tr;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -187,7 +189,7 @@ public final class Library {
                 TextView tile = tiles.get(b.titleId);
                 if (inFront && Motion.on() && tile != null && coverChip != null && coverChip.isAttachedToWindow()) {
                     // the building cover is on screen: it says Ready and pops, and the rescan that moves it among the Ready games waits until that was seen
-                    coverChip.setText("Ready");
+                    coverChip.setText(tr("Ready"));
                     coverChip.setTextColor(PUi.col(a, R.color.bn_leaf));
                     if (coverStrip != null && !coverStrip.isIndeterminate()) Motion.progress(coverStrip, 100, false);
                     Motion.pop(tile);
@@ -816,19 +818,20 @@ public final class Library {
         HorizontalScrollView chips = new HorizontalScrollView(a);
         chips.setHorizontalScrollBarEnabled(false);
         LinearLayout chipRow = PUi.row(a);
-        chip(chipRow, "All " + all, ALL);
+        chip(chipRow, String.format(java.util.Locale.ROOT, tr("All %d"), all), ALL);
         if (building > 0) {
-            SpannableString s = new SpannableString("Building " + building);
-            if (filter != BUILDING) s.setSpan(new ForegroundColorSpan(PUi.col(a, R.color.bn_banana)), 9, s.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);   // the count in banana: something runs
+            String count = Integer.toString(building);
+            SpannableString s = new SpannableString(String.format(java.util.Locale.ROOT, tr("Building %d"), building));
+            if (filter != BUILDING) s.setSpan(new ForegroundColorSpan(PUi.col(a, R.color.bn_banana)), s.length() - count.length(), s.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);   // the count in banana: something runs
             chip(chipRow, s, BUILDING);
         }
-        chip(chipRow, "Ready " + ready, READY);
-        chip(chipRow, "Build needed " + toBuild, BUILD);
-        chip(chipRow, a.getString(R.string.not_supported_yet) + " " + noProfile, NO_PROFILE);
+        chip(chipRow, String.format(java.util.Locale.ROOT, tr("Ready %d"), ready), READY);
+        chip(chipRow, String.format(java.util.Locale.ROOT, tr("Build needed %d"), toBuild), BUILD);
+        chip(chipRow, tr(a.getString(R.string.not_supported_yet)) + " " + noProfile, NO_PROFILE);
         if (hidden > 0) {
             // Found in review: lets the player see and remove a confirmed-missing (or currently unreachable) game themselves, through upstream's
             // own "Game file gone → Remove" dialog, instead of this code ever deleting the record on its own
-            Button hideB = PUi.button(a, PUi.joined(hidden + " hidden", showHidden ? "Hide" : "Show"),
+            Button hideB = PUi.button(a, PUi.joined(String.format(java.util.Locale.ROOT, tr("%d hidden"), hidden), showHidden ? tr("Hide") : tr("Show")),
                     PUi.Kind.QUIET, v -> { Haptics.play(v, Haptics.Word.CLICK); showHidden = !showHidden; render(); });
             hideB.setOnKeyListener(shoulders);
             focusRing(hideB, Color.TRANSPARENT);
@@ -839,7 +842,7 @@ public final class Library {
         }
         chips.addView(chipRow, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         top.addView(chips, PUi.weight());
-        Button findB = PUi.button(a, find.isEmpty() ? "Find" : PUi.joined("Find", find), PUi.Kind.QUIET, Haptics.on(Haptics.Word.CLICK, v -> findDialog()));
+        Button findB = PUi.button(a, find.isEmpty() ? "Find" : PUi.joined(tr("Find"), find), PUi.Kind.QUIET, Haptics.on(Haptics.Word.CLICK, v -> findDialog()));
         findB.setCompoundDrawablesRelativeWithIntrinsicBounds(PUi.icon(a, R.drawable.ic_search, R.color.bn_accent), null, null, null);
         findB.setCompoundDrawablePadding(PUi.dp(a, 6));
         findB.setOnKeyListener(shoulders);
@@ -851,9 +854,9 @@ public final class Library {
         TextView note = null;   // the scan's line, or the empty library's: it fades in when the last rebuild did not have it
         if (scanning) {
             int n = PeanutsPrefs.roots(a).size();
-            note = PUi.add(box, PUi.small(a, "Looking in " + n + (n == 1 ? " folder…" : " folders…")), 8);
+            note = PUi.add(box, PUi.small(a, String.format(java.util.Locale.ROOT, tr(n == 1 ? "Looking in %d folder…" : "Looking in %d folders…"), n)), 8);
         } else if (rows.isEmpty() && pc == null && !setup) {
-            note = PUi.add(box, PUi.small(a, "No games found in " + PeanutsPrefs.gameDir(a) + ". Put NSP, NSZ, XCI, XCZ, .nup files or dump folders there, then Rescan (Settings › Library)."), 8);
+            note = PUi.add(box, PUi.small(a, String.format(java.util.Locale.ROOT, tr("No games found in %s. Put NSP, NSZ, XCI, XCZ, .nup files or dump folders there, then Rescan (Settings › Library)."), PeanutsPrefs.gameDir(a))), 8);
         }
         if (note != null && !hadNote) Motion.fadeIn(note);
         hadNote = note != null;
@@ -1011,15 +1014,15 @@ public final class Library {
 
     private void findDialog() {
         EditText e = new EditText(a);
-        e.setHint("A game's name");
+        e.setHint(tr("A game's name"));
         e.setText(find);
         e.setSingleLine(true);
         e.setSelection(find.length());
         LinearLayout wrap = new LinearLayout(a);
         wrap.setOrientation(LinearLayout.VERTICAL);
         wrap.addView(e, PUi.fill());
-        AlertDialog d = PUi.sheet(a, "Find", wrap).setPositiveButton("Find", (x, w) -> { find = e.getText().toString().trim(); animateNext = true; render(); })
-                .setNegativeButton("Cancel", null).setNeutralButton(find.isEmpty() ? null : "Clear", (x, w) -> { find = ""; animateNext = true; render(); }).create();
+        AlertDialog d = PUi.sheet(a, "Find", wrap).setPositiveButton(tr("Find"), (x, w) -> { find = e.getText().toString().trim(); animateNext = true; render(); })
+                .setNegativeButton(tr("Cancel"), null).setNeutralButton(find.isEmpty() ? null : tr("Clear"), (x, w) -> { find = ""; animateNext = true; render(); }).create();
         e.setOnEditorActionListener((v, id, ev) -> { find = e.getText().toString().trim(); d.dismiss(); animateNext = true; render(); return true; });
         d.show();
         e.requestFocus();
@@ -1065,7 +1068,7 @@ public final class Library {
         boolean fileGone = vs == LibraryScanner.VersionState.FILE_GONE, wrongVersion = vs == LibraryScanner.VersionState.UNSUPPORTED;
         String buildWords = fileGone ? "File gone" : wrongVersion ? "Wrong version" : "Build needed";
         CharSequence state = building ? (stopped ? "Build stopped" : PUi.joined("Building", ownBuild ? b.percent + " %" : "preparing"))
-                : st == READY ? "Ready" : st == BUILD ? buildWords : a.getString(R.string.not_supported_yet);
+                : st == READY ? "Ready" : st == BUILD ? buildWords : tr(a.getString(R.string.not_supported_yet));
 
         LinearLayout cell = new LinearLayout(a);
         cell.setOrientation(LinearLayout.VERTICAL);
@@ -1119,7 +1122,7 @@ public final class Library {
             int text = fileGone || wrongVersion ? R.color.bn_danger : R.color.bn_on_banana;
             cover.addView(mark(pill, PUi.col(a, fill), text, false, Gravity.TOP | Gravity.START));
         } else {
-            cover.addView(mark(a.getString(R.string.not_supported_yet), PUi.col(a, R.color.bn_danger_tint), R.color.bn_danger, false, Gravity.TOP | Gravity.START));
+            cover.addView(mark(tr(a.getString(R.string.not_supported_yet)), PUi.col(a, R.color.bn_danger_tint), R.color.bn_danger, false, Gravity.TOP | Gravity.START));
         }
         if (companion) cover.addView(companionBadge(building && !stopped));
 
@@ -1290,7 +1293,7 @@ public final class Library {
             k.found = found(r.title);
             k.primary = tap; k.primaryLabel = "Build…"; k.primaryIcon = R.drawable.ic_build;   // the sheet, as the tap
         } else {
-            k.kind = BottomScreen.Card.K_NO_PROFILE; k.state = a.getString(R.string.not_supported_yet);
+            k.kind = BottomScreen.Card.K_NO_PROFILE; k.state = tr(a.getString(R.string.not_supported_yet));
             if (r.game != null) { k.second = hold; k.secondLabel = "Game page"; }
         }
         BottomScreen.focus(k, null);
@@ -1456,7 +1459,7 @@ public final class Library {
                     left = PUi.button(a, "Free up space", PUi.Kind.TONAL, v -> {
                         Haptics.play(v, Haptics.Word.CLICK);
                         try { a.startActivity(new android.content.Intent(android.provider.Settings.ACTION_INTERNAL_STORAGE_SETTINGS)); }
-                        catch (RuntimeException e) { Toast.makeText(a, "Open Settings › Storage to free some space.", Toast.LENGTH_LONG).show(); }
+                        catch (RuntimeException e) { Toast.makeText(a, tr("Open Settings › Storage to free some space."), Toast.LENGTH_LONG).show(); }
                     });
                     right = PUi.button(a, "Retry", PUi.Kind.SOFT, Haptics.on(Haptics.Word.CLICK, v -> openSheet.run()));
                     break;
@@ -1550,7 +1553,7 @@ public final class Library {
                 if (build != null) { listener.done(ok, message, code); return; }
                 if (dev.peanuts.ctl.Ctl.buildRefused(message)) return;   // a control command asked for this build: the refusal is its answer, not a dialog
                 Haptics.play(anchor(), Haptics.Word.REJECT);
-                new AlertDialog.Builder(a).setTitle("Build").setMessage(message).setPositiveButton("OK", null).show();
+                new AlertDialog.Builder(a).setTitle(tr("Build")).setMessage(tr(message)).setPositiveButton(tr("OK"), null).show();
             }
         });
         if (id == 0) return null;   // the pipeline says why, in its own dialog
@@ -1570,10 +1573,10 @@ public final class Library {
      * was already saved by Prepare and picks up where it stopped, Prepare.java's job.json resume path), and hands it straight to {@link #startBuild}
      */
     private void resumeBuild(LibraryScanner.Title t) {
-        if (t == null) { Haptics.play(anchor(), Haptics.Word.REJECT); Toast.makeText(a, "Open the game from Home to resume it.", Toast.LENGTH_LONG).show(); return; }
+        if (t == null) { Haptics.play(anchor(), Haptics.Word.REJECT); Toast.makeText(a, tr("Open the game from Home to resume it."), Toast.LENGTH_LONG).show(); return; }
         GameSheet.State s = GameSheet.resumeState(a, t, CompanionPort.forTitle(catalog, t.titleId));
         String why = startBuild(s);
-        if (why != null) { Haptics.play(anchor(), Haptics.Word.REJECT); new AlertDialog.Builder(a).setTitle("Build").setMessage(why).setPositiveButton("OK", null).show(); }
+        if (why != null) { Haptics.play(anchor(), Haptics.Word.REJECT); new AlertDialog.Builder(a).setTitle(tr("Build")).setMessage(tr(why)).setPositiveButton(tr("OK"), null).show(); }
         else if (building(t.titleId)) Haptics.play(anchor(), Haptics.Word.HEAVY);   // it started (a refusal by the pipeline says so in its own dialog)
     }
 
@@ -1582,11 +1585,11 @@ public final class Library {
      * (Prepare.run0: a failed job whose failure offers Try anyway). The control interface's job try_anyway comes the same way (CtlPort.build)
      */
     private void tryAnyway(LibraryScanner.Title t) {
-        if (t == null) { Haptics.play(anchor(), Haptics.Word.REJECT); Toast.makeText(a, "Open the game from Home to try it anyway.", Toast.LENGTH_LONG).show(); return; }
+        if (t == null) { Haptics.play(anchor(), Haptics.Word.REJECT); Toast.makeText(a, tr("Open the game from Home to try it anyway."), Toast.LENGTH_LONG).show(); return; }
         GameSheet.State s = GameSheet.resumeState(a, t, CompanionPort.forTitle(catalog, t.titleId));
         s.buildAnyway = true;
         String why = startBuild(s);
-        if (why != null) { Haptics.play(anchor(), Haptics.Word.REJECT); new AlertDialog.Builder(a).setTitle("Build").setMessage(why).setPositiveButton("OK", null).show(); }
+        if (why != null) { Haptics.play(anchor(), Haptics.Word.REJECT); new AlertDialog.Builder(a).setTitle(tr("Build")).setMessage(tr(why)).setPositiveButton(tr("OK"), null).show(); }
         else if (building(t.titleId)) Haptics.play(anchor(), Haptics.Word.HEAVY);
     }
 
@@ -1631,12 +1634,12 @@ public final class Library {
         // P5: folded in as its own numbered step, same Setting-row shape as the other three, instead of a quiet text button below the action row
         String updateDir = PeanutsPrefs.updateDir(a), dlcDir = PeanutsPrefs.dlcDir(a);
         CharSequence updDlcValue = updateDir == null && dlcDir == null ? "Point at your update and DLC files if they're not inside the game folder already. Skip if everything's together."
-                : PUi.joined(updateDir != null ? "Update: " + updateDir : "Update: not set", dlcDir != null ? "DLC: " + dlcDir : null);
+                : PUi.joined(updateDir != null ? tr("Update: ") + updateDir : tr("Update: not set"), dlcDir != null ? tr("DLC: ") + dlcDir : null);
         PUi.add(c, new PUi.Setting(a, "⬆️", "Updates & DLC", Haptics.on(Haptics.Word.TICK, v -> LibrarySettings.extraFolders(a))).value(updDlcValue).chevron(a).view, 0);
         PUi.add(c, new PUi.Setting(a, "🔤", "Firmware", Haptics.on(Haptics.Word.TICK, v -> LibrarySettings.pickFirmwareSource(a)))
                 .value(LibrarySettings.fontsValue(a, "Needed before building. A missing font can crash some games at boot.")).chevron(a).view, 0);
         PUi.Action show = PUi.action(a, R.drawable.ic_add, "Show my games", PUi.Kind.PRIMARY, v -> {
-            if (PeanutsPrefs.gameDir(a) == null) { Haptics.play(v, Haptics.Word.REJECT); Toast.makeText(a, "Pick the game folder first", Toast.LENGTH_LONG).show(); return; }
+            if (PeanutsPrefs.gameDir(a) == null) { Haptics.play(v, Haptics.Word.REJECT); Toast.makeText(a, tr("Pick the game folder first"), Toast.LENGTH_LONG).show(); return; }
             Haptics.play(v, Haptics.Word.CLICK);
             PeanutsPrefs.setupDone(a, true);
             changed(a);

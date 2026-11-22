@@ -1,5 +1,7 @@
 package dev.peanuts.ui;
 
+import static dev.peanuts.i18n.L10n.tr;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.os.Handler;
@@ -64,7 +66,7 @@ public final class CompanionVersions {
         box = new LinearLayout(act);
         box.setOrientation(LinearLayout.VERTICAL);
         render();
-        dialog = PUi.sheet(act, "Versions", box).setNegativeButton("Close", null).create();
+        dialog = PUi.sheet(act, "Versions", box).setNegativeButton(tr("Close"), null).create();
         dialog.setOnDismissListener(d -> { if (onClose != null) onClose.run(); });
         dialog.show();
         load();
@@ -155,7 +157,7 @@ public final class CompanionVersions {
     private void render() {
         box.removeAllViews();
         if (loading) { PUi.add(box, PUi.body(act, "Loading versions…"), 0); return; }
-        if (loadError != null && versions.isEmpty()) { PUi.add(box, PUi.body(act, "Catalog unavailable: " + loadError), 0); return; }
+        if (loadError != null && versions.isEmpty()) { PUi.add(box, PUi.body(act, tr("Catalog unavailable: ") + loadError), 0); return; }
         if (root == null) { PUi.add(box, PUi.body(act, "Build the game first: a companion goes beside its pack, so there is nowhere to install one yet."), 0); return; }
         if (versions.isEmpty()) { PUi.add(box, PUi.body(act, "No companion in the catalog for this game."), 0); return; }
         PUi.add(box, PUi.small(act, busy ? busyText : PUi.joined(versions.size() + (versions.size() == 1 ? " version" : " versions"), "newest first")), 0);
@@ -231,7 +233,7 @@ public final class CompanionVersions {
         fact(facts, "Size", size(item.size));
         fact(facts, "Checksum", isActive ? (activeVerified ? "Verified" : "Not verified, an older version of this app installed it")
                 : installable ? "Checked before it installs" : "None published, so it cannot be installed");
-        AlertDialog.Builder b = PUi.sheet(act, "Version " + item.version, page).setNegativeButton("Close", null);
+        AlertDialog.Builder b = PUi.sheet(act, "Version " + item.version, page).setNegativeButton(tr("Close"), null);
         if (!isActive && installable && !busy) b.setPositiveButton(label(item), (d, w) -> install(item, isLocal));
         b.show();
     }
@@ -249,7 +251,7 @@ public final class CompanionVersions {
 
     private void install(CompanionPort.Item item, boolean isLocal) {
         if (busy) return;
-        busy = true; busyText = isLocal ? "Switching to " + item.version + "…" : "Downloading " + item.version + "…";
+        busy = true; busyText = isLocal ? tr("Switching to ") + item.version + "…" : tr("Downloading ") + item.version + "…";
         lastProgressRenderAt = 0;
         render();
         new Thread(() -> {
@@ -272,8 +274,8 @@ public final class CompanionVersions {
                 busy = false;
                 refreshLocalState();
                 Haptics.play(act.getWindow().getDecorView(), ferr != null ? Haptics.Word.REJECT : Haptics.Word.CLICK);   // the install or switch ended: refused, or done
-                if (ferr != null) Toast.makeText(act, "Failed: " + ferr, Toast.LENGTH_LONG).show();
-                else if (fwarning != null) new AlertDialog.Builder(act).setTitle(item.version + " is active").setMessage(fwarning).setPositiveButton("OK", null).show();
+                if (ferr != null) Toast.makeText(act, tr("Failed: ") + ferr, Toast.LENGTH_LONG).show();
+                else if (fwarning != null) new AlertDialog.Builder(act).setTitle(item.version + " is active").setMessage(fwarning).setPositiveButton(tr("OK"), null).show();
                 else Toast.makeText(act, item.version + " is active. It loads at the game's next start.", Toast.LENGTH_LONG).show();
                 render();
             });
@@ -282,7 +284,7 @@ public final class CompanionVersions {
 
     private void forget(CompanionPort.Item item) {
         PUi.confirmDanger(act, "Forget " + item.version + "?", "Its files are deleted from this device. It can be downloaded again from the catalog.", "Forget", () -> {
-            busy = true; busyText = "Removing " + item.version + "…";
+            busy = true; busyText = tr("Removing ") + item.version + "…";
             render();
             new Thread(() -> {   // Found in review: a recursive delete, off the main thread like every other disk operation here
                 String err = null;
@@ -290,7 +292,7 @@ public final class CompanionVersions {
                 final String ferr = err;
                 main.post(() -> {
                     busy = false;
-                    if (ferr != null) Toast.makeText(act, "Could not forget it: " + ferr, Toast.LENGTH_LONG).show();
+                    if (ferr != null) Toast.makeText(act, tr("Could not forget it: ") + ferr, Toast.LENGTH_LONG).show();
                     refreshLocalState();
                     render();
                 });
@@ -308,7 +310,7 @@ public final class CompanionVersions {
                 final String ferr = err;
                 main.post(() -> {
                     busy = false;
-                    if (ferr != null) Toast.makeText(act, "Failed: " + ferr, Toast.LENGTH_LONG).show();
+                    if (ferr != null) Toast.makeText(act, tr("Failed: ") + ferr, Toast.LENGTH_LONG).show();
                     refreshLocalState();
                     render();
                 });

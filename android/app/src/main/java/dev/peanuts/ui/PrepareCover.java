@@ -1,5 +1,7 @@
 package dev.peanuts.ui;
 
+import static dev.peanuts.i18n.L10n.tr;
+
 import dev.nxnative.android.BananaBackgroundView;
 import dev.nxnative.android.R;
 
@@ -93,7 +95,7 @@ public final class PrepareCover extends FrameLayout {
         LinearLayout.LayoutParams cp = new LinearLayout.LayoutParams(-2, -2);
         cp.topMargin = PUi.dp(a, 10);
         col.addView(count, cp);
-        TextView drv = PUi.text(a, driver == null ? "For the system's graphics driver" : "For the graphics driver " + driver, 14, R.color.bn_text_2, 500);
+        TextView drv = PUi.text(a, driver == null ? "For the system's graphics driver" : String.format(java.util.Locale.ROOT, tr("For the graphics driver %s"), driver), 14, R.color.bn_text_2, 500);
         drv.setGravity(Gravity.CENTER);
         LinearLayout.LayoutParams dp = new LinearLayout.LayoutParams(-2, -2);
         dp.topMargin = PUi.dp(a, 6);
@@ -114,7 +116,7 @@ public final class PrepareCover extends FrameLayout {
             if (skipped) return;
             skipped = true;
             play[0].setAlpha(0.4f);
-            count.setText("Finishing the shader in progress, then the game starts");   // (a large one can take most of a minute)
+            count.setText(tr("Finishing the shader in progress, then the game starts"));   // (a large one can take most of a minute)
             playAnyway.run();
         });
         actions.addView(play[0], PUi.wrap());
@@ -133,7 +135,7 @@ public final class PrepareCover extends FrameLayout {
         if (done > total) done = total;
         bar.setMax(total);
         bar.setProgress(done);
-        count.setText(PUi.joined("Preparing shaders", String.format(Locale.US, "%,d of %,d", done, total), (int) (100L * done / total) + "%"));
+        count.setText(PUi.joined(tr("Preparing shaders"), String.format(Locale.US, tr("%,d of %,d"), done, total), (int) (100L * done / total) + "%"));
         peanut.open(done / (float) total);
     }
 

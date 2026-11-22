@@ -1,5 +1,8 @@
 package dev.peanuts.build;
 
+import static dev.peanuts.i18n.L10n.tr;
+import static dev.peanuts.i18n.BuildZh.text;
+
 import android.content.Context;
 import android.util.Log;
 
@@ -39,7 +42,7 @@ public final class ModBuildPipeline {
             Log.w(TAG, "ModBuildService start: " + e);
             LISTENERS.remove(id);
             running = 0;
-            if (l != null) MAIN.post(() -> l.done(false, "Cannot start the modded build: " + e.getMessage(), BuildListener.OTHER));
+            if (l != null) MAIN.post(() -> l.done(false, text(tr("Cannot start the modded build: %s"), e.getMessage()), BuildListener.OTHER));
             return 0;
         }
         return id;

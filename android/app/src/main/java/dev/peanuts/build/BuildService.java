@@ -1,5 +1,8 @@
 package dev.peanuts.build;
 
+import static dev.peanuts.i18n.L10n.tr;
+import static dev.peanuts.i18n.BuildZh.text;
+
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -99,7 +102,7 @@ public final class BuildService extends Service {
     @Override public void onCreate() {
         super.onCreate();
         nm = getSystemService(NotificationManager.class);
-        nm.createNotificationChannel(new NotificationChannel(CHANNEL, "Building games", NotificationManager.IMPORTANCE_LOW));
+        nm.createNotificationChannel(new NotificationChannel(CHANNEL, tr("Building games"), NotificationManager.IMPORTANCE_LOW));
     }
 
     @Override public IBinder onBind(Intent intent) { return null; }
@@ -217,7 +220,7 @@ public final class BuildService extends Service {
                 BuildLogShare.remember(this, r.titleId, work);
                 log("work folder: " + work);
             } catch (ReflectiveOperationException | RuntimeException e) { log("work folder: unknown (" + e + ")"); }
-            if (cancelled) throw new BuildListener.Failure("Build cancelled.", BuildListener.CANCELLED);
+            if (cancelled) throw new BuildListener.Failure(tr("Build cancelled."), BuildListener.CANCELLED);
             File pack = null;
             IOException prepareFailed = null;
             try {
@@ -226,7 +229,7 @@ public final class BuildService extends Service {
             } catch (IOException e) {
                 prepareFailed = e;   // the companion is still installed (it goes beside the dump's work folder, which Prepare made): the next Build has only the pack left to do
             }
-            if (cancelled) throw new BuildListener.Failure("Build cancelled.", BuildListener.CANCELLED);
+            if (cancelled) throw new BuildListener.Failure(tr("Build cancelled."), BuildListener.CANCELLED);
             GameEnv.ensureFonts(this, r.titleId);
             GameEnv.ensureBuildId(this, r.titleId, dump);
             try {
@@ -278,8 +281,8 @@ public final class BuildService extends Service {
     /** (a) the .nup from an NSP/XCI, or the base as it is */
     private File stepImport(BuildRequest r) throws IOException {
         if (r.base == null || !r.base.exists()) throw new BuildListener.Failure("The game's base file is missing" + (r.base == null ? "." : ": " + r.base), BuildListener.FILE_MISSING);
-        if (r.update != null && !r.update.exists()) throw new BuildListener.Failure("The update file is missing: " + r.update, BuildListener.FILE_MISSING);
-        if (!r.needsImport()) { log("import: not needed, the base is a .nup or a dump"); progress("import", IMPORT_END, "Game file: " + r.base.getName()); return r.base; }
+        if (r.update != null && !r.update.exists()) throw new BuildListener.Failure(text(tr("The update file is missing: %s"), r.update), BuildListener.FILE_MISSING);
+        if (!r.needsImport()) { log("import: not needed, the base is a .nup or a dump"); progress("import", IMPORT_END, text(tr("Game file: %s"), r.base.getName())); return r.base; }
         // PEANUTS: a build folder (Settings - Library - Build folder), when set, is where this title's .nup and pack both go (<build folder>/<title ID>/),
         // instead of beside the game and in the app's own storage; PeanutsPrefs.buildGameDir validates the title ID and returns null without one set
         File buildGameDir = destination(r);
@@ -294,13 +297,13 @@ public final class BuildService extends Service {
         if (dir == null) throw new IOException("The .nup has no folder: " + out);
         long newest = 0;
         for (File f : inputs) newest = Math.max(newest, f.lastModified());
-        if (!again && out.isFile() && out.length() > 0 && out.lastModified() >= newest) { log("import: imported already, the .nup is newer than every input: " + out); progress("import", IMPORT_END, "Imported already: " + out.getName()); return out; }
+        if (!again && out.isFile() && out.length() > 0 && out.lastModified() >= newest) { log("import: imported already, the .nup is newer than every input: " + out); progress("import", IMPORT_END, text(tr("Imported already: %s"), out.getName())); return out; }
         if (!Importer.available()) throw new IOException("This build of the app cannot import NSP, NSZ, XCI or XCZ files yet (no importer). Use a .nup or a dump folder.");
         File keys = new File(new File(getFilesDir(), "keys"), "prod.keys");
         if (!keys.isFile()) throw new IOException("No prod.keys: add your keys in Setup first.");
         // The sizes come from the probe (the keys first): the .nup's from the titles' own records, which a compressed file's length is not, and what
         // unpacking a solid .nsz needs beside it while it imports (issue #149); a file the probe cannot size counts with its length, as before
-        progress("import", 0, "Loading keys");
+        progress("import", 0, tr("Loading keys"));
         long[] sized;
         try {
             if (Importer.keys(keys) != 0) throw new IOException("Keys: " + Importer.lastError());
@@ -345,7 +348,7 @@ public final class BuildService extends Service {
             final long[] last = {0};
             final String[] lastStep = {""};
             Importer.cancel(false);   // a Stop meant for an earlier import does not stop this one; a Stop for this one from here on does (then cancelled is true)
-            if (cancelled) throw new BuildListener.Failure("Build cancelled." + kept, BuildListener.CANCELLED);
+            if (cancelled) throw new BuildListener.Failure(tr("Build cancelled.") + kept, BuildListener.CANCELLED);
             int rc = Importer.writeNup(tmp, inputs, r.titleId, (step, done, total) -> {
                 long now = System.currentTimeMillis();
                 boolean newStep = !step.equals(lastStep[0]) && (step.startsWith("unpack/") || step.startsWith("check/"));
@@ -355,7 +358,7 @@ public final class BuildService extends Service {
                 last[0] = now;
                 progress("import", Compressed.percent(step, done, total, unpackBytes + checkBytes, nupBytes, IMPORT_END), Compressed.stepText(step, done, total));
             });
-            if (cancelled) { tmp.delete(); deleteUnpacked(tmp); throw new BuildListener.Failure("Build cancelled." + kept, BuildListener.CANCELLED); }
+            if (cancelled) { tmp.delete(); deleteUnpacked(tmp); throw new BuildListener.Failure(tr("Build cancelled.") + kept, BuildListener.CANCELLED); }
             if (rc != 0) { tmp.delete();
                 deleteUnpacked(tmp);
                 String why = Importer.lastError(), damaged = Compressed.failure(why, name, !deleted);
@@ -372,7 +375,7 @@ public final class BuildService extends Service {
         }
         long took = Math.max(1, System.currentTimeMillis() - importStart);
         log("import: done in " + took / 1000 + " s, " + BuildLogBundle.size(out.length()) + " (" + BuildLogBundle.size(out.length() * 1000 / took) + "/s)");
-        progress("import", IMPORT_END, "Imported " + out.getName());
+        progress("import", IMPORT_END, text(tr("Imported %s"), out.getName()));
         return out;
     }
 
@@ -448,14 +451,14 @@ public final class BuildService extends Service {
         log("runtime shaders: " + need + " missing from the pack of " + name + ": capturing");
         int before = RuntimeShaders.captured(RuntimeShaders.captureDir(work));   // captures an earlier build already made
         boolean enough = new RuntimeShaders(this).capture(r.titleId, work, dump, pack, need, (pct, detail) -> progress("prepare", PREPARE_END - 5 + pct * 5 / 100, detail), () -> cancelled);
-        if (cancelled) throw new IOException("Build cancelled.");
+        if (cancelled) throw new IOException(tr("Build cancelled."));
         if (!enough) {
             int have = RuntimeShaders.captured(RuntimeShaders.captureDir(work));
             if (have == 0) throw new IOException(name + " could not finish graphics setup (" + need + " shaders unavailable). Tap Build again to retry.");
             log("runtime shaders: only " + have + " of " + need + " captured; re-running the job with those");
         }
         RuntimeShaders.rerun(work, jobFile);
-        progress("prepare", IMPORT_END, "Completing graphics setup");
+        progress("prepare", IMPORT_END, tr("Completing graphics setup"));
         File rebuilt = stepPrepare(r, dump);
         int left = RuntimeShaders.missing(jobFile);
         int runtimeLeft = RuntimeShaders.missingInPack(this, r.titleId, rebuilt);
@@ -470,16 +473,16 @@ public final class BuildService extends Service {
 
     /** (c) the companion beside the pack: <title ID>-work/peanuts/<Name>/ */
     private void stepCompanion(BuildRequest r, File pack) throws IOException {
-        if (r.companionPackage == null || r.companionPackage.isEmpty()) { progress("companion", 100, "No companion chosen"); return; }
+        if (r.companionPackage == null || r.companionPackage.isEmpty()) { progress("companion", 100, tr("No companion chosen")); return; }
         File root = companionRoot(pack, dumpWork(r, pack));
         log("companion " + r.companionPackage + " for " + r.titleId + " into " + root);
-        progress("companion", PREPARE_END, "Looking up the companion");
+        progress("companion", PREPARE_END, tr("Looking up the companion"));
         Companions.Item item = Companions.find(Companions.fetch(), r.titleId);
         if (item == null) throw new IOException("The catalog has no companion for " + name + " now; the game is ready to play without one.");
         String have = Companions.installedVersion(root, item.packageName);
-        if (have != null && Companions.compareVersions(have, item.version) >= 0) { progress("companion", 100, "Companion " + Companions.label(item.packageName, have) + " installed already"); return; }
+        if (have != null && Companions.compareVersions(have, item.version) >= 0) { progress("companion", 100, text(tr("Companion %s installed already"), Companions.label(item.packageName, have))); return; }
         Companions.install(item, root, getCacheDir(), (what, done, total) -> progress("companion", PREPARE_END + (total > 0 ? (int) Math.min(9, done * 9 / total) : 0), what));
-        progress("companion", 100, "Companion " + Companions.label(item.packageName, item.version) + " installed");
+        progress("companion", 100, text(tr("Companion %s installed"), Companions.label(item.packageName, item.version)));
     }
 
     /** The work folder from the pack when the pack is in it (dump's ../<title ID>-work/android-pack), else beside the dump (DumpCheck.workOf) */
@@ -513,7 +516,7 @@ public final class BuildService extends Service {
 
     private Notification note(int percent, String detail) {
         Intent cancel = new Intent(this, BuildService.class).setAction(ACTION_CANCEL);
-        Notification.Builder b = new Notification.Builder(this, CHANNEL).setSmallIcon(android.R.drawable.stat_sys_download).setContentTitle("Building " + name)
+        Notification.Builder b = new Notification.Builder(this, CHANNEL).setSmallIcon(android.R.drawable.stat_sys_download).setContentTitle(text(tr("Building %s"), name))
                 .setContentText(detail).setOnlyAlertOnce(true).setOngoing(true).setProgress(100, Math.max(0, Math.min(100, percent)), false)
                 .addAction(new Notification.Action.Builder(null, "Cancel", PendingIntent.getService(this, 1, cancel, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT)).build());
         Intent open = getPackageManager().getLaunchIntentForPackage(getPackageName());
@@ -523,7 +526,7 @@ public final class BuildService extends Service {
 
     private Notification done(boolean ok, String message) {
         Notification.Builder b = new Notification.Builder(this, BuildPipeline.endChannel(nm, CHANNEL, !ok && cancelled)).setSmallIcon(ok ? android.R.drawable.stat_sys_download_done : android.R.drawable.stat_notify_error)
-                .setContentTitle(ok ? name + " is ready to play" : "Building " + name + " stopped").setContentText(message).setStyle(new Notification.BigTextStyle().bigText(message)).setAutoCancel(true);
+                .setContentTitle(ok ? text(tr("%s is ready to play"), name) : text(tr("Building %s stopped"), name)).setContentText(message).setStyle(new Notification.BigTextStyle().bigText(message)).setAutoCancel(true);
         Intent open = getPackageManager().getLaunchIntentForPackage(getPackageName());
         if (open != null) b.setContentIntent(PendingIntent.getActivity(this, 0, open, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT));
         return b.build();

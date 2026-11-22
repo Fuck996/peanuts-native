@@ -1,5 +1,7 @@
 package dev.peanuts.ui;
 
+import static dev.peanuts.i18n.L10n.tr;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
@@ -63,7 +65,7 @@ public final class LibrarySettings {
         fontsRow = new PUi.Setting(a, "🔤", "Firmware", Haptics.on(Haptics.Word.TICK, v -> pickFirmwareSource(a))).chevron(a);
         card.addView(fontsRow.view);
         PUi.add(card, PUi.body(a, KEYS_FIRMWARE_GUIDANCE), 12);
-        card.addView(new PUi.Setting(a, "🔄", "Rescan", Haptics.on(Haptics.Word.CLICK, v -> { Library.rescan(a); Toast.makeText(a, "Looking in the folders again", Toast.LENGTH_SHORT).show(); }))
+        card.addView(new PUi.Setting(a, "🔄", "Rescan", Haptics.on(Haptics.Word.CLICK, v -> { Library.rescan(a); Toast.makeText(a, tr("Looking in the folders again"), Toast.LENGTH_SHORT).show(); }))
                 .value("Reads the folders again").chevron(a).view);
         card.addView(new PUi.Setting(a, "🧹", "Free up space", Haptics.on(Haptics.Word.TICK, v -> freeUpSpace(a)))
                 .value("Delete original dumps of games already built").chevron(a).view);
@@ -120,7 +122,7 @@ public final class LibrarySettings {
         companionsRow.view.setOnLongClickListener(v -> {
             boolean on = !PeanutsPrefs.developerReadout(a);
             PeanutsPrefs.developerReadout(a, on);
-            Toast.makeText(a, "Developer second-screen readout: " + (on ? "on" : "off"), Toast.LENGTH_SHORT).show();
+            Toast.makeText(a, tr("Developer second-screen readout: ") + tr(on ? "On" : "Off"), Toast.LENGTH_SHORT).show();
             refreshRows();
             return true;
         });
@@ -204,7 +206,7 @@ public final class LibrarySettings {
         String u = PeanutsPrefs.updateDir(a), dl = PeanutsPrefs.dlcDir(a);
         PUi.add(box, new PUi.Setting(a, "⬆️", "Update folder", v -> { d[0].dismiss(); pickFolder(a, REQ_UPDATE_DIR, "Pick your update folder"); }).value(u != null ? u : "Optional").chevron(a).view, 12);
         PUi.add(box, new PUi.Setting(a, "➕", "DLC folder", v -> { d[0].dismiss(); pickFolder(a, REQ_DLC_DIR, "Pick your DLC folder"); }).value(dl != null ? dl : "Optional").chevron(a).view, 0);
-        d[0] = PUi.sheet(a, "Update and DLC folders", box).setPositiveButton("Done", null).show();
+        d[0] = PUi.sheet(a, "Update and DLC folders", box).setPositiveButton(tr("Done"), null).show();
     }
 
     // ---- Pickers ----
@@ -215,8 +217,8 @@ public final class LibrarySettings {
         box.setOrientation(LinearLayout.VERTICAL);
         PUi.add(box, PUi.body(a, KEYS_FIRMWARE_GUIDANCE), 0);
         PUi.sheet(a, "Firmware and keys", box)
-                .setPositiveButton("Choose keys", (d, w) -> pickFile(a, REQ_KEYS, "Pick your prod.keys"))
-                .setNegativeButton("Cancel", null).show();
+                .setPositiveButton(tr("Choose keys"), (d, w) -> pickFile(a, REQ_KEYS, "Pick your prod.keys"))
+                .setNegativeButton(tr("Cancel"), null).show();
     }
 
     static void pickFile(Activity a, int request, String title) { pickFile(a, request, title, "*/*"); }
@@ -224,7 +226,7 @@ public final class LibrarySettings {
     private static final String[] ZIP_TYPES = {"application/zip", "application/x-zip-compressed", "application/x-zip", "multipart/x-zip", "application/octet-stream"};
 
     static void pickFile(Activity a, int request, String title, String mime) {
-        Toast.makeText(a, title, Toast.LENGTH_LONG).show();
+        Toast.makeText(a, tr(title), Toast.LENGTH_LONG).show();
         Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT).setType(mime).addCategory(Intent.CATEGORY_OPENABLE);
         // A zip is not application/zip on every phone: a file manager or a download can label it x-zip-compressed, x-zip or plain octet-stream, and the
         // picker then greys it out so it cannot be chosen at all (GitHub issue #42 may be this). The importer says what a wrong file is
@@ -243,12 +245,12 @@ public final class LibrarySettings {
         PUi.add(box, PUi.body(a, KEYS_FIRMWARE_GUIDANCE), 12);
         PUi.add(box, new PUi.Setting(a, "📁", "Folder", v -> { d[0].dismiss(); pickFolder(a, REQ_FIRMWARE, "Pick your firmware folder"); }).chevron(a).view, 12);
         PUi.add(box, new PUi.Setting(a, "🗜️", "Zip file", v -> { d[0].dismiss(); pickFile(a, REQ_FIRMWARE_ZIP, "Pick your firmware zip", "application/zip"); }).chevron(a).view, 0);
-        d[0] = PUi.sheet(a, "Firmware", box).setPositiveButton("Cancel", null).show();
+        d[0] = PUi.sheet(a, "Firmware", box).setPositiveButton(tr("Cancel"), null).show();
     }
 
     /** As upstream's MainActivity.pickFolder: the system folder picker opened at the shared storage's root */
     static void pickFolder(Activity a, int request, String title) {
-        Toast.makeText(a, title, Toast.LENGTH_LONG).show();
+        Toast.makeText(a, tr(title), Toast.LENGTH_LONG).show();
         Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
         i.putExtra(DocumentsContract.EXTRA_INITIAL_URI, Uri.parse("content://com.android.externalstorage.documents/document/primary%3A"));
         a.startActivityForResult(i, request);
@@ -261,21 +263,21 @@ public final class LibrarySettings {
         if (dirs.isEmpty()) { addBuildFolder(a); return; }
         String[] labels = dirs.toArray(new String[0]);
         labels[0] += " (default)";
-        new AlertDialog.Builder(a).setTitle("Build folders")
+        new AlertDialog.Builder(a).setTitle(tr("Build folders"))
                 .setItems(labels, (dialog, which) -> {
                     String dir = dirs.get(which);
                     AlertDialog.Builder actions = new AlertDialog.Builder(a).setTitle(dir)
-                            .setNeutralButton("Forget folder", (d, w) -> {
+                            .setNeutralButton(tr("Forget folder"), (d, w) -> {
                                 dirs.remove(dir);
                                 updateBuildFolders(a, dirs);
-                            }).setNegativeButton("Cancel", null);
-                    if (which != 0) actions.setPositiveButton("Make default", (d, w) -> {
+                            }).setNegativeButton(tr("Cancel"), null);
+                    if (which != 0) actions.setPositiveButton(tr("Make default"), (d, w) -> {
                         dirs.remove(dir);
                         dirs.add(0, dir);
                         updateBuildFolders(a, dirs);
                     });
                     actions.show();
-                }).setPositiveButton("Add folder…", (d, w) -> addBuildFolder(a)).setNegativeButton("Close", null).show();
+                }).setPositiveButton(tr("Add folder…"), (d, w) -> addBuildFolder(a)).setNegativeButton(tr("Close"), null).show();
     }
 
     private static void updateBuildFolders(Activity a, List<String> dirs) {
@@ -325,8 +327,8 @@ public final class LibrarySettings {
             default: return true;
         }
         if (!Environment.isExternalStorageManager()) {
-            new AlertDialog.Builder(a).setTitle("Allow file access").setMessage("The app needs All files access to read " + p + ". Allow it, then come back.")
-                    .setPositiveButton("Open settings", (d, w) -> openAccessSettings(a)).setNegativeButton("Later", null).show();
+            new AlertDialog.Builder(a).setTitle(tr("Allow file access")).setMessage("The app needs All files access to read " + p + ". Allow it, then come back.")
+                    .setPositiveButton(tr("Open settings"), (d, w) -> openAccessSettings(a)).setNegativeButton(tr("Later"), null).show();
         }
         refreshRows();
         Library.changed(a);
@@ -361,7 +363,7 @@ public final class LibrarySettings {
                 String err = imp.lastError();
                 UI.post(() -> {
                     if (r != 0) error(a, "The importer does not accept these keys: " + err + "\nThe file is kept; pick another to replace it.");
-                    else { Haptics.play(a.getWindow().getDecorView(), Haptics.Word.CLICK); Toast.makeText(a, "Keys loaded", Toast.LENGTH_LONG).show(); }
+                    else { Haptics.play(a.getWindow().getDecorView(), Haptics.Word.CLICK); Toast.makeText(a, tr("Keys loaded"), Toast.LENGTH_LONG).show(); }
                     keysLanded(a);
                 });
             }, "peanuts-keys").start();
@@ -508,8 +510,8 @@ public final class LibrarySettings {
                         .value(PUi.joined("Original " + size, f.getName())).view);
             }
         }
-        d[0] = PUi.sheet(a, "Free up space", box).setPositiveButton("Done", null).show();
+        d[0] = PUi.sheet(a, "Free up space", box).setPositiveButton(tr("Done"), null).show();
     }
 
-    private static void error(Activity a, String msg) { if (a.isFinishing() || a.isDestroyed()) return; Haptics.play(a.getWindow().getDecorView(), Haptics.Word.REJECT); new AlertDialog.Builder(a).setTitle("Library").setMessage(msg).setPositiveButton("OK", null).show(); }
+    private static void error(Activity a, String msg) { if (a.isFinishing() || a.isDestroyed()) return; Haptics.play(a.getWindow().getDecorView(), Haptics.Word.REJECT); new AlertDialog.Builder(a).setTitle(tr("Library")).setMessage(tr(msg)).setPositiveButton(tr("OK"), null).show(); }
 }

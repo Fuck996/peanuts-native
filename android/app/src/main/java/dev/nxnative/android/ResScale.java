@@ -1,4 +1,6 @@
 package dev.nxnative.android;
+
+import static dev.peanuts.i18n.L10n.tr;
 // PEANUTS: new file. Resolution scale: the size the game's picture is drawn at, as a factor of the size the game itself asks for, for every game (the host's
 // DM_RES_SCALE, dm/gfx/vk_android/vka_resscale.inc: the game's render targets are made larger or smaller without the game knowing). A default in Settings › Game
 // defaults and a row in each game's Picture settings, from the next start. Not offered for a game with a render_cfg profile row: it has its own Resolution and
@@ -61,11 +63,11 @@ final class ResScale {
             String[] labels = new String[NAMES.length + 1];
             labels[0] = "Default (Settings: " + SHORT[index(global(a))] + ")";
             System.arraycopy(NAMES, 0, labels, 1, NAMES.length);
-            new PadFocus.Builder(a).setTitle("Resolution scale · " + g.name).setSingleChoiceItems(labels, own(a, id) ? index(quarters(a, id)) + 1 : 0, (x, w) -> {
+            new PadFocus.Builder(a).setTitle(tr("Resolution scale") + " · " + g.name).setSingleChoiceItems(labels, own(a, id) ? index(quarters(a, id)) + 1 : 0, (x, w) -> {   // PEANUTS: zh-CN display text.
                 set(a, id, w == 0 ? null : QUARTERS[w - 1]);
                 x.dismiss();
                 done.run();
-            }).setNegativeButton("Cancel", null).show();
+            }).setNegativeButton(tr("Cancel"), null).show();   // PEANUTS: zh-CN display text.
         }).value(SHORT[index(quarters(a, id))] + (own(a, id) ? "" : " (default)")).chevron(a);
         return s.note(NOTE);
     }
@@ -73,12 +75,12 @@ final class ResScale {
     /** Settings › Performance and picture */
     static Ui.Setting defaultRow(MainActivity a) {
         Ui.Setting[] s = new Ui.Setting[1];
-        s[0] = new Ui.Setting(a, "🔍", "Resolution scale", v -> new PadFocus.Builder(a).setTitle("Resolution scale")
+        s[0] = new Ui.Setting(a, "🔍", "Resolution scale", v -> new PadFocus.Builder(a).setTitle(tr("Resolution scale"))   // PEANUTS: zh-CN display text.
                 .setSingleChoiceItems(NAMES, index(global(a)), (d, w) -> {
                     global(a, QUARTERS[w]);
                     s[0].value(NAMES[index(global(a))]);
                     d.dismiss();
-                }).setNegativeButton("Cancel", null).show()).chevron(a);
+                }).setNegativeButton(tr("Cancel"), null).show()).chevron(a);   // PEANUTS: zh-CN display text.
         return s[0].value(NAMES[index(global(a))]).note(NOTE);
     }
 }

@@ -1,4 +1,6 @@
 package dev.nxnative.android;
+
+import static dev.peanuts.i18n.L10n.tr;
 // PEANUTS: new file. Console mode (docked / handheld) for the games whose Resolution does not already set the operation mode: every Switch 1 game.
 // The host has both modes (hle_oe.c dm_opmode: DM_OPMODE, else the profile's op_mode), but the Android launcher had no row for it outside the
 // graphics_scale games, so a game started as its profile says: docked, a 1080p picture, for nearly all of them. It lives in this package because
@@ -82,11 +84,11 @@ final class ScreenMode {
         if (fx != null) return new Ui.Setting(a, "📺", "Console mode", null).value(fx);
         Ui.Setting s = new Ui.Setting(a, "📺", "Console mode", v -> {
             String[] labels = {"Default (" + (global(a) < 0 ? "this game: " + SHORT[own(id)] : "Settings: " + SHORT[global(a)]) + ")", NAMES[0], NAMES[1]};
-            new PadFocus.Builder(a).setTitle("Console mode · " + g.name).setSingleChoiceItems(labels, own(a, id) ? mode(a, id) + 1 : 0, (x, w) -> {
+            new PadFocus.Builder(a).setTitle(tr("Console mode") + " · " + g.name).setSingleChoiceItems(labels, own(a, id) ? mode(a, id) + 1 : 0, (x, w) -> {   // PEANUTS: zh-CN display text.
                 set(a, id, w == 0 ? null : w - 1);
                 x.dismiss();
                 done.run();
-            }).setNegativeButton("Cancel", null).show();
+            }).setNegativeButton(tr("Cancel"), null).show();   // PEANUTS: zh-CN display text.
         }).value(SHORT[mode(a, id)] + (own(a, id) ? "" : " (default)")).chevron(a);
         String n = NOTES.get(id);
         return s.note((n != null ? n + " " : "The picture size the game draws at, as on a Switch. Handheld also turns on the game's touch screen. ") + "From the next start; while the game runs, its in-game panel changes it at once.");
@@ -95,12 +97,12 @@ final class ScreenMode {
     /** Settings › Performance and picture */
     static Ui.Setting defaultRow(MainActivity a) {
         Ui.Setting[] s = new Ui.Setting[1];
-        s[0] = new Ui.Setting(a, "📺", "Console mode", v -> new PadFocus.Builder(a).setTitle("Console mode")
+        s[0] = new Ui.Setting(a, "📺", "Console mode", v -> new PadFocus.Builder(a).setTitle(tr("Console mode"))   // PEANUTS: zh-CN display text.
                 .setSingleChoiceItems(new String[] {"Each game's own", NAMES[0], NAMES[1]}, global(a) + 1, (d, w) -> {
                     global(a, w - 1);
                     s[0].value(globalLabel(a));
                     d.dismiss();
-                }).setNegativeButton("Cancel", null).show()).chevron(a);
+                }).setNegativeButton(tr("Cancel"), null).show()).chevron(a);   // PEANUTS: zh-CN display text.
         return s[0].value(globalLabel(a));
     }
 }

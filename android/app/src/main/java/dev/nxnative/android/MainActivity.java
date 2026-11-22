@@ -1,5 +1,8 @@
 package dev.nxnative.android;
 
+import dev.peanuts.i18n.L10n;   // PEANUTS: zh-CN display text.
+import static dev.peanuts.i18n.L10n.tr;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ClipData;
@@ -251,7 +254,7 @@ public final class MainActivity extends Activity {
         return true;
     }
 
-    private String poppedLine(long n) { return "Bananas Popped: " + java.text.NumberFormat.getIntegerInstance().format(n); }
+    private String poppedLine(long n) { return tr("Bananas Popped: ") + java.text.NumberFormat.getIntegerInstance().format(n); }   // PEANUTS: zh-CN display text.
 
     /** The player wiki (its pages are written and kept up to date on the project's site, so the app links to it and keeps no copy) */
     static final String WIKI_URL = "https://github.com/igawa6/peanuts-native/blob/main/peanuts/docs/FAQ.md";   // PEANUTS: this fork's questions and answers (upstream: Banana Native's player wiki, which describes that app's screens and games)
@@ -338,24 +341,24 @@ public final class MainActivity extends Activity {
                 .toggle(this, Prefs.overlay(this), (b, on) -> { Prefs.overlay(this, on); refreshSettings(); });
         play.addView(overlayRow.view);
         Ui.Setting touch = new Ui.Setting(this, "🎮", "On-screen controls", null).chevron(this);
-        touch.view.setOnClickListener(v -> new PadFocus.Builder(this).setTitle("On-screen controls")
-                .setSingleChoiceItems(TouchControls.MODE_NAMES, TouchControls.mode(this), (d, w) -> { TouchControls.mode(this, w); touch.value(touchLabel(w)); d.dismiss(); })
-                .setNegativeButton("Cancel", null).show());
+        touch.view.setOnClickListener(v -> new PadFocus.Builder(this).setTitle(tr("On-screen controls"))   // PEANUTS: zh-CN display text.
+                .setSingleChoiceItems(L10n.items(TouchControls.MODE_NAMES), TouchControls.mode(this), (d, w) -> { TouchControls.mode(this, w); touch.value(touchLabel(w)); d.dismiss(); })
+                .setNegativeButton(tr("Cancel"), null).show());
         touch.value(touchLabel(TouchControls.mode(this)));
         ctl.addView(touch.view);
         Ui.Setting rot = new Ui.Setting(this, "🔄", "Screen rotation", null).chevron(this);
-        rot.view.setOnClickListener(v -> new PadFocus.Builder(this).setTitle("Screen rotation")
-                .setSingleChoiceItems(Prefs.ROTATION_NAMES, Prefs.rotationAuto(this) ? 1 : 0, (d, w) -> { Prefs.rotationAuto(this, w == 1); rot.value(rotationLabel(w == 1)); d.dismiss(); })
-                .setNegativeButton("Cancel", null).show());
+        rot.view.setOnClickListener(v -> new PadFocus.Builder(this).setTitle(tr("Screen rotation"))   // PEANUTS: zh-CN display text.
+                .setSingleChoiceItems(L10n.items(Prefs.ROTATION_NAMES), Prefs.rotationAuto(this) ? 1 : 0, (d, w) -> { Prefs.rotationAuto(this, w == 1); rot.value(rotationLabel(w == 1)); d.dismiss(); })
+                .setNegativeButton(tr("Cancel"), null).show());
         rot.value(rotationLabel(Prefs.rotationAuto(this)));
         play.addView(rot.view);
         ctl.addView(new Ui.Setting(this, "🔘", "Show / hide button", null).toggle(this, TouchControls.toggleButton(this), (b, on) -> TouchControls.toggleButton(this, on))
                 .value("The small button at the top centre that hides the on-screen controls").view);
         // How a controller opens the in-game panel (PadPanel); the panel opens by touch with a swipe in from the right edge or Back
         Ui.Setting padPanel = new Ui.Setting(this, "🎛️", "Controller: in-game panel", null).chevron(this);
-        padPanel.view.setOnClickListener(v -> new PadFocus.Builder(this).setTitle("Open the in-game panel with a controller")
-                .setSingleChoiceItems(PadPanel.OPEN_NAMES, Prefs.panelPad(this), (d, w) -> { Prefs.panelPad(this, w); padPanel.value(padPanelLabel(w)); d.dismiss(); })
-                .setNegativeButton("Cancel", null).show());
+        padPanel.view.setOnClickListener(v -> new PadFocus.Builder(this).setTitle(tr("Open the in-game panel with a controller"))   // PEANUTS: zh-CN display text.
+                .setSingleChoiceItems(L10n.items(PadPanel.OPEN_NAMES), Prefs.panelPad(this), (d, w) -> { Prefs.panelPad(this, w); padPanel.value(padPanelLabel(w)); d.dismiss(); })
+                .setNegativeButton(tr("Cancel"), null).show());
         padPanel.value(padPanelLabel(Prefs.panelPad(this)));
         ctl.addView(padPanel.view);
         resRow = new Ui.Setting(this, "🖼️", "Resolution", v -> gameRes()).chevron(this);
@@ -370,9 +373,9 @@ public final class MainActivity extends Activity {
         perf.addView(new Ui.Setting(this, "🚀", "Use fast cores", null).toggle(this, Prefs.pinThreads(this), (b, on) -> Prefs.pinThreadsDefault(this, on))
                 .value("Keeps the busiest threads off the small cores").view);
         Ui.Setting xbox = new Ui.Setting(this, "🅰️", "Xbox button label swap", null).chevron(this);
-        xbox.view.setOnClickListener(v -> new PadFocus.Builder(this).setTitle("Xbox button label swap")
-                .setSingleChoiceItems(Prefs.XBOX_NAMES, Prefs.xboxButtons(this), (d, w) -> { Prefs.xboxButtonsDefault(this, w); xbox.value(Prefs.xboxLabel(w)); d.dismiss(); })
-                .setNegativeButton("Cancel", null).show());
+        xbox.view.setOnClickListener(v -> new PadFocus.Builder(this).setTitle(tr("Xbox button label swap"))   // PEANUTS: zh-CN display text.
+                .setSingleChoiceItems(L10n.items(Prefs.XBOX_NAMES), Prefs.xboxButtons(this), (d, w) -> { Prefs.xboxButtonsDefault(this, w); xbox.value(Prefs.xboxLabel(w)); d.dismiss(); })
+                .setNegativeButton(tr("Cancel"), null).show());
         xbox.value(Prefs.xboxLabel(Prefs.xboxButtons(this)));
         ctl.addView(xbox.view);
         Ui.Setting padMap = new Ui.Setting(this, "🕹️", "Button mapping", null).chevron(this);
@@ -404,8 +407,8 @@ public final class MainActivity extends Activity {
         usersRow.value(UsersUi.summary(this));
         sys.addView(usersRow.view);
         Ui.Setting advRow = new Ui.Setting(this, "🛠️", "Advanced", null).chevron(this);   // every switch the host offers, by area, with search (AdvancedPage.java)
-        advRow.view.setOnClickListener(v -> AdvancedPage.show(this, null, null, () -> advRow.value(AdvancedSettings.count(this, null) == 0 ? "Search every switch; each starts at Auto" : AdvancedSettings.count(this, null) + " set")));
-        advRow.value(AdvancedSettings.count(this, null) == 0 ? "Search every switch; each starts at Auto" : AdvancedSettings.count(this, null) + " set");
+        advRow.view.setOnClickListener(v -> AdvancedPage.show(this, null, null, () -> advRow.value(AdvancedSettings.count(this, null) == 0 ? "Search every switch; each starts at Auto" : String.format(Locale.ROOT, tr("%d set"), AdvancedSettings.count(this, null)))));   // PEANUTS: zh-CN display text.
+        advRow.value(AdvancedSettings.count(this, null) == 0 ? "Search every switch; each starts at Auto" : String.format(Locale.ROOT, tr("%d set"), AdvancedSettings.count(this, null)));
         sys.addView(advRow.view);
         sys.addView(new Ui.Setting(this, "📁", "Folders", v -> Folders.dialog(this)).value("Game, pack and save folders").chevron(this).view);
         sys.addView(new Ui.Setting(this, "🧹", "Storage", v -> StorageUi.dialog(this)).value("Remove leftovers and old files; never saves").chevron(this).view);   // (StorageUi.java)
@@ -428,8 +431,8 @@ public final class MainActivity extends Activity {
                 if (on == Prefs.adbControl(this)) return;   // the switch set back to what is stored (below): nothing to do
                 if (!on) { Prefs.adbControl(this, false); return; }
                 b.setChecked(false);   // stays off until confirmed
-                Ui.confirmDanger(this, "Turn ADB control on?", "While it is on, adb, and any other app on this phone, can add games, start Prepare and install or pick a GPU "
-                        + "driver through Peanuts Native's launcher, without asking you. A GPU driver is code that runs inside the game. Turn it on only while you use adb, then off again.",   // PEANUTS: rebrand
+                Ui.confirmDanger(this, "Turn ADB control on?", tr("While it is on, adb, and any other app on this phone, can add games, start Prepare and install or pick a GPU "
+                        + "driver through Peanuts Native's launcher, without asking you. A GPU driver is code that runs inside the game. Turn it on only while you use adb, then off again."),   // PEANUTS: rebrand
                         "Turn on", () -> { Prefs.adbControl(this, true); b.setChecked(true); });
             });
             help.addView(adb.view);
@@ -445,9 +448,9 @@ public final class MainActivity extends Activity {
         StringBuilder ids = new StringBuilder();   // the games this build includes, so a player can tell whether it has theirs (Profile.missing points here)
         for (Profile p : Profile.all()) ids.append("\n· ").append(p.name).append(" (").append(p.titleId).append(")");
         String basedOn = !BuildConfig.NX_PEANUTS_ID.isEmpty()   // PEANUTS: the fork credits Banana Native and its maker first (a Peanuts build, whatever its -PnxAppId)
-                ? "Peanuts Native is a fork of Banana Native by moceure (GPL-3.0), which is based on nxnative by seedds. Companions run on the Eden Duo runtime. LSFG from Eden (GPL-3.0)."
-                : "Based on nxnative by seedds. LSFG from Eden (GPL-3.0).";
-        TextView t = Ui.small(this, "Games in this app:" + ids + "\n\n" + basedOn + (BuildConfig.NX_LSFG ? "" : " Built without LSFG."));   // PEANUTS: basedOn above
+                ? tr("Peanuts Native is a fork of Banana Native by moceure (GPL-3.0), which is based on nxnative by seedds. Companions run on the Eden Duo runtime. LSFG from Eden (GPL-3.0).")
+                : tr("Based on nxnative by seedds. LSFG from Eden (GPL-3.0).");
+        TextView t = Ui.small(this, tr("Games in this app:") + ids + "\n\n" + basedOn + (BuildConfig.NX_LSFG ? "" : tr(" Built without LSFG.")));   // PEANUTS: basedOn above
         t.setTextIsSelectable(true);
         Ui.add(about, t, 10);
         refreshSettings();
@@ -459,19 +462,19 @@ public final class MainActivity extends Activity {
     /** The settings rows' current values (after a dialog, on resume) */
     private void refreshSettings() {
         if (overlayRow == null) return;
-        updateRow.value("Peanuts Native " + Updater.version(this) + (Updater.available(this) ? "" : " · release app only"));   // PEANUTS: rebrand
+        updateRow.value("Peanuts Native " + Updater.version(this) + (Updater.available(this) ? "" : tr(" · release app only")));   // PEANUTS: rebrand
         boolean ov = Prefs.overlay(this);
         if (overlayRow.toggle.isChecked() != ov) overlayRow.toggle.setChecked(ov);
         int n = 0;
         for (String[] it : Overlay.ITEMS) if (Prefs.overlayItem(this, it[0])) n++;
-        overlayRow.value(ov ? "On · " + n + " of " + Overlay.ITEMS.length + " items" : "Off");
+        overlayRow.value(ov ? String.format(Locale.ROOT, tr("On · %d of %d items"), n, Overlay.ITEMS.length) : tr("Off"));   // PEANUTS: zh-CN display text.
         resRow.value(resLabel());
         capRow.value(capLabel(Prefs.fpsCap(this)));
         upsRow.value(GameUpscaler.MODES[GameUpscaler.mode(this)]);
         sharpRow.value(GameUpscaler.sharpName(GameUpscaler.sharp(this)));
         sharpRow.view.setVisibility(GameUpscaler.mode(this) == GameUpscaler.MODE_FSR ? View.VISIBLE : View.GONE);
         drsRow.value(Prefs.DRS_NAMES[Prefs.drs(this)]);
-        lsfgRow.value(!BuildConfig.NX_LSFG ? "Not in this build" : Lsfg.on(this) ? "On · " + Lsfg.multiplier(this) + "x" + (Lsfg.find(this) == null ? " · Lossless.dll missing" : "") : "Off");
+        lsfgRow.value(!BuildConfig.NX_LSFG ? "Not in this build" : Lsfg.on(this) ? String.format(Locale.ROOT, tr("On · %dx"), Lsfg.multiplier(this)) + (Lsfg.find(this) == null ? tr(" · Lossless.dll missing") : "") : "Off");   // PEANUTS: zh-CN display text.
         GpuDriver.Info d = GpuDriver.selected(this);
         gpuRow.value(d == null ? "System" : d.label());
         timeRow.value(TimeOfDay.label(this));
@@ -523,7 +526,7 @@ public final class MainActivity extends Activity {
         List<String> asked = AdbControl.asked(i::hasExtra);
         if (asked.isEmpty()) return i;
         android.util.Log.w("nxnative", "launcher intent from " + getReferrer() + " with " + asked + " ignored: ADB control is off (Settings › Help › ADB control)");
-        Toast.makeText(this, "A command from another app was ignored (Settings › ADB control is off)", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, tr("A command from another app was ignored (Settings › ADB control is off)"), Toast.LENGTH_LONG).show();   // PEANUTS: zh-CN display text.
         Intent out = new Intent(i);
         for (String k : asked) out.removeExtra(k);
         return out;
@@ -665,7 +668,7 @@ public final class MainActivity extends Activity {
         c.addView(name, np);
         GameMeta.loadControl(new File(g.gameDir), Edition.control(this, g), m -> { if (m.icon != null) Ui.tileIcon(tile, m.icon); });   // with the edition switch on, program 1's icon
         boolean other = Profile.of(g.titleId) == null;   // no profile in this APK: it cannot run here (Profile.missing says why)
-        TextView st = other ? Ui.status(this, getString(R.string.not_supported_yet), R.color.bn_danger) : Ui.status(this, "Checking\u2026", R.color.bn_text_2);   // PEANUTS: shared unsupported-game label
+        TextView st = other ? Ui.status(this, tr(getString(R.string.not_supported_yet)), R.color.bn_danger) : Ui.status(this, "Checking\u2026", R.color.bn_text_2);   // PEANUTS: shared unsupported-game label
         st.setTextSize(12);
         st.setGravity(Gravity.CENTER);
         LinearLayout.LayoutParams sp = Ui.wrap();
@@ -675,7 +678,7 @@ public final class MainActivity extends Activity {
         c.setForeground(Ui.ripple(this, Ui.round(0, dp(20), 0, 0)));   // a pressed state over the tile
         c.setOnLongClickListener(v -> { manage(g); return true; });
         if (other) {   // nothing on this tile can work in this app: the sentence is behind a badge (the page still has its folders, saves and Remove)
-            TextView n = Ui.warnChip(this, "Why?", getString(R.string.not_supported_yet), Profile.missing(g.titleId, g.name));   // PEANUTS: shared unsupported-game label
+            TextView n = Ui.warnChip(this, "Why?", tr(getString(R.string.not_supported_yet)), Profile.missing(g.titleId, g.name));   // PEANUTS: shared unsupported-game label
             LinearLayout.LayoutParams wl = Ui.wrap();
             wl.topMargin = dp(8);
             c.addView(n, wl);
@@ -815,20 +818,20 @@ public final class MainActivity extends Activity {
                 else Ui.status(st, problem.label, problem.prepare || problem.anyway ? R.color.bn_accent : R.color.bn_danger);
                 if (problem != null && !problem.playable && !problem.legacy && (!problem.reason.isEmpty() || !problem.detail.isEmpty())) {   // why, and what the chip does, behind a badge
                     TextView why = Ui.warnChip(this, "Why?", problem.label, problem.reason);
-                    why.setOnClickListener(v -> Ui.explain(this, problem.label, problem.reason.isEmpty() ? problem.label : problem.reason, problem.detail).setPositiveButton("OK", null).show());
+                    why.setOnClickListener(v -> Ui.explain(this, problem.label, problem.reason.isEmpty() ? problem.label : problem.reason, problem.detail).setPositiveButton(tr("OK"), null).show());   // PEANUTS: zh-CN display text.
                     LinearLayout.LayoutParams wl = Ui.wrap();
                     wl.topMargin = dp(6);
                     info.addView(why, wl);
                 }
                 // an untested build: the tile opens the page; Play there asks first (launch)
                 if (problem != null && problem.saveGone != null) {
-                    play.setText("Fix the save folder");
+                    play.setText(tr("Fix the save folder"));   // PEANUTS: zh-CN display text.
                     play.setOnClickListener(v -> Folders.saveGoneDialog(this, g, problem.saveGone));
                     st.setOnClickListener(v -> play.performClick());   // the state chip does what the state needs
                     st.setContentDescription(play.label.getText() + ": " + st.getText());
                 }
                 if (problem != null && problem.repick) {
-                    play.setText("Pick it again");
+                    play.setText(tr("Pick it again"));   // PEANUTS: zh-CN display text.
                     play.setIcon(R.drawable.ic_add);
                     play.setOnClickListener(v -> relink(g));
                     st.setOnClickListener(v -> play.performClick());   // the state chip does what the state needs
@@ -971,13 +974,13 @@ public final class MainActivity extends Activity {
 
     boolean needAccess() {
         if (Environment.isExternalStorageManager()) return false;
-        new PadFocus.Builder(this).setTitle("Allow file access").setMessage("The app needs All files access to read your game dump. Allow it, then come back.")
-                .setPositiveButton("Open settings", (d, w) -> openAccessSettings()).setNegativeButton("Cancel", null).show();
+        new PadFocus.Builder(this).setTitle(tr("Allow file access")).setMessage(tr("The app needs All files access to read your game dump. Allow it, then come back."))   // PEANUTS: zh-CN display text.
+                .setPositiveButton(tr("Open settings"), (d, w) -> openAccessSettings()).setNegativeButton(tr("Cancel"), null).show();
         return true;
     }
 
     void pickFolder(int request, String title) {
-        Toast.makeText(this, title, Toast.LENGTH_LONG).show();
+        Toast.makeText(this, tr(title), Toast.LENGTH_LONG).show();   // PEANUTS: zh-CN display text.
         Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
         i.putExtra(DocumentsContract.EXTRA_INITIAL_URI, Uri.parse("content://com.android.externalstorage.documents/document/primary%3A"));
         startActivityForResult(i, request);
@@ -986,12 +989,12 @@ public final class MainActivity extends Activity {
     /** Add game: the dump is a folder (base/, updates/) or one .nup file (NUP.md); the user says which, then the system picker opens for it */
     void addGame() {
         if (!Environment.isExternalStorageManager()) { addWithoutAccess(); return; }
-        new PadFocus.Builder(this).setTitle("Add game: your dump is…")
-                .setItems(new String[] {"A folder (with base/, and updates/ if any)", "A .nup file, or an NSP Box .nsp file"}, (d, w) -> {
+        new PadFocus.Builder(this).setTitle(tr("Add game: your dump is…"))   // PEANUTS: zh-CN display text.
+                .setItems(L10n.items(new String[] {"A folder (with base/, and updates/ if any)", "A .nup file, or an NSP Box .nsp file"}), (d, w) -> {
                     if (w == 0) pickFolder(PICK_GAME, "Pick your dump folder (with base/, and updates/ if any)");
                     else pickNup();
                 })
-                .setNegativeButton("Cancel", null).show();
+                .setNegativeButton(tr("Cancel"), null).show();   // PEANUTS: zh-CN display text.
     }
 
     /**
@@ -1000,19 +1003,19 @@ public final class MainActivity extends Activity {
      * they are
      */
     private void addWithoutAccess() {
-        new PadFocus.Builder(this).setTitle("Add game: your dump is…")
-                .setItems(new String[] {"A .nup or .nsp file (used where it is)", "A dump folder (copied into the app: a folder needs All files access to be read where it is)",
-                        "Allow All files access"}, (d, w) -> {
+        new PadFocus.Builder(this).setTitle(tr("Add game: your dump is…"))   // PEANUTS: zh-CN display text.
+                .setItems(L10n.items(new String[] {"A .nup or .nsp file (used where it is)", "A dump folder (copied into the app: a folder needs All files access to be read where it is)",
+                        "Allow All files access"}), (d, w) -> {
                     if (w == 0) pickNupHere();
-                    else if (w == 1) { Toast.makeText(this, "Pick your dump folder (with base/, and updates/ if any)", Toast.LENGTH_LONG).show(); GameCopy.pickTree(this); }
+                    else if (w == 1) { Toast.makeText(this, tr("Pick your dump folder (with base/, and updates/ if any)"), Toast.LENGTH_LONG).show(); GameCopy.pickTree(this); }
                     else openAccessSettings();
                 })
-                .setNegativeButton("Cancel", null).show();
+                .setNegativeButton(tr("Cancel"), null).show();
     }
 
     /** The file picker for a .nup used where it is (PickedNup) */
     void pickNupHere() {
-        Toast.makeText(this, "Pick your game's .nup or .nsp file", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, tr("Pick your game's .nup or .nsp file"), Toast.LENGTH_LONG).show();   // PEANUTS: zh-CN display text.
         startActivityForResult(PickedNup.pickIntent(), PICK_NUP_HERE);
     }
 
@@ -1071,8 +1074,8 @@ public final class MainActivity extends Activity {
                 if (isFinishing()) return;
                 if (ff == null) {
                     relinkFor = null;
-                    AlertDialog.Builder b = Ui.explain(this, "Cannot use this file", fe, u.toString()).setNegativeButton("OK", null);
-                    if (fs) b.setPositiveButton("Copy into the app", (d, w) -> GameCopy.copyNup(this, u));
+                    AlertDialog.Builder b = Ui.explain(this, "Cannot use this file", fe, u.toString()).setNegativeButton(tr("OK"), null);   // PEANUTS: zh-CN display text.
+                    if (fs) b.setPositiveButton(tr("Copy into the app"), (d, w) -> GameCopy.copyNup(this, u));
                     b.show();
                     return;
                 }
@@ -1087,7 +1090,7 @@ public final class MainActivity extends Activity {
      * (Recent, Downloads) is used where it is (PickedNup), so the picker asks for a lasting read permission too
      */
     private void pickNup() {
-        Toast.makeText(this, "Pick your game's .nup or .nsp file", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, tr("Pick your game's .nup or .nsp file"), Toast.LENGTH_LONG).show();   // PEANUTS: zh-CN display text.
         Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("*/*")
                 .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
         i.putExtra(DocumentsContract.EXTRA_INITIAL_URI, Uri.parse("content://com.android.externalstorage.documents/document/primary%3A"));
@@ -1218,7 +1221,7 @@ public final class MainActivity extends Activity {
         if (single) {
             Pick k = picks.get(0);
             if (k.error != null) {
-                if (k.plain != null) Ui.explain(this, "Cannot use this NSP", k.plain, k.error).setPositiveButton("OK", null).show();
+                if (k.plain != null) Ui.explain(this, "Cannot use this NSP", k.plain, k.error).setPositiveButton(tr("OK"), null).show();   // PEANUTS: zh-CN display text.
                 else error(k.error);
                 return;
             }
@@ -1240,8 +1243,8 @@ public final class MainActivity extends Activity {
                         : "No pack found for this " + what + ", and it is not a dump Prepare can start from.";
                 Ui.explain(this, "No pack for this " + what, why + "\n\nIf you have a pack folder made for exactly this " + what + " (with pack.tsv), you can pick it.",
                                 k.found != null ? k.found.detail : "")
-                        .setPositiveButton("OK", null)
-                        .setNeutralButton("Pick a pack folder", (d, w) -> pickFolder(PICK_PACK, "Pick the pack folder (android-pack, with pack.tsv)")).show();
+                        .setPositiveButton(tr("OK"), null)   // PEANUTS: zh-CN display text.
+                        .setNeutralButton(tr("Pick a pack folder"), (d, w) -> pickFolder(PICK_PACK, "Pick the pack folder (android-pack, with pack.tsv)")).show();
             });
             return;
         }
@@ -1264,7 +1267,7 @@ public final class MainActivity extends Activity {
         if (!ok.isEmpty()) m.append("Added: ").append(TextUtils.join(", ", ok)).append(".");
         if (!prepare.isEmpty()) m.append(m.length() > 0 ? "\n\n" : "").append("Needs Prepare: ").append(TextUtils.join(", ", prepare))
                 .append(". No pack that fits was found: its card's Prepare makes one on this phone (one game at a time).");
-        if (!unsupported.isEmpty()) m.append(m.length() > 0 ? "\n\n" : "").append(getString(R.string.not_supported_yet)).append(": ").append(TextUtils.join(", ", unsupported))   // PEANUTS: shared unsupported-game label
+        if (!unsupported.isEmpty()) m.append(m.length() > 0 ? "\n\n" : "").append(tr(getString(R.string.not_supported_yet))).append(": ").append(TextUtils.join(", ", unsupported))   // PEANUTS: shared unsupported-game label
                 .append(". Install a build that includes them (Settings › About lists the games this one has).");
         if (!noPack.isEmpty()) m.append(m.length() > 0 ? "\n\n" : "").append("No pack found: ").append(TextUtils.join(", ", noPack))
                 .append(". Add it on its own to pick its pack folder.");
@@ -1272,7 +1275,7 @@ public final class MainActivity extends Activity {
         if (!twice.isEmpty()) m.append(m.length() > 0 ? "\n\n" : "").append("Another dump of the same game was on the list already, so both cards are kept: ")
                 .append(TextUtils.join(", ", twice)).append(". the game page › Remove from list takes one away (nothing is deleted).");
         android.util.Log.i("nxnative", "Add game: " + m.toString().replace("\n\n", " | "));
-        new PadFocus.Builder(this).setTitle(ok.isEmpty() && prepare.isEmpty() ? "No game added" : "Games added").setMessage(m).setPositiveButton("OK", null).show();
+        new PadFocus.Builder(this).setTitle(tr(ok.isEmpty() && prepare.isEmpty() ? "No game added" : "Games added")).setMessage(m).setPositiveButton(tr("OK"), null).show();   // PEANUTS: zh-CN display text.
     }
 
     /**
@@ -1286,9 +1289,9 @@ public final class MainActivity extends Activity {
         for (Game o : others) { dirs.add(o.gameDir); s.append("\n• ").append(o.gameDir); }
         new PadFocus.Builder(this).setTitle("Replace " + name + "?")
                 .setMessage("Another dump of " + name + " is on your list:" + s + "\n\nUse " + game.getName() + " instead? Only the list entry changes: no dump, pack or save is deleted.")
-                .setPositiveButton("Replace", (d, w) -> then.accept(dirs))
-                .setNeutralButton("Keep both", (d, w) -> then.accept(null))
-                .setNegativeButton("Cancel", null).show();
+                .setPositiveButton(tr("Replace"), (d, w) -> then.accept(dirs))   // PEANUTS: zh-CN display text.
+                .setNeutralButton(tr("Keep both"), (d, w) -> then.accept(null))
+                .setNegativeButton(tr("Cancel"), null).show();
     }
 
     /** These game paths' list entries go (exact paths, as the list keeps them); nothing on the storage changes */
@@ -1379,12 +1382,12 @@ public final class MainActivity extends Activity {
         new PadFocus.Builder(this).setTitle("Remove " + g.name + "?")
                 .setMessage("This game is a copy in the app's storage (" + g.gameDir + "). Remove the list entry only, or delete the copy as well (it cannot be undone; "
                         + "your original dump, the pack and your saves" + (save != null ? " (" + save.getPath() + ")" : "") + " stay).")
-                .setPositiveButton("Remove only", (d, w) -> drop.run())
-                .setNeutralButton("Delete the copy", (d, w) -> Ui.confirmDanger(this, "Delete the copy?", "Deleted: " + g.gameDir + ". This cannot be undone.", "Delete", () -> {
+                .setPositiveButton(tr("Remove only"), (d, w) -> drop.run())   // PEANUTS: zh-CN display text.
+                .setNeutralButton(tr("Delete the copy"), (d, w) -> Ui.confirmDanger(this, "Delete the copy?", "Deleted: " + g.gameDir + ". This cannot be undone.", "Delete", () -> {
                     drop.run();
                     if (!GameCopy.deleteCopy(this, new File(g.gameDir))) error("Not all of " + g.gameDir + " could be deleted.");
                 }))
-                .setNegativeButton("Cancel", null).show();
+                .setNegativeButton(tr("Cancel"), null).show();   // PEANUTS: zh-CN display text.
     }
 
     void launch(Game card) {
@@ -1394,7 +1397,7 @@ public final class MainActivity extends Activity {
             if (e == null) {
                 Ui.explain(this, "No pack for the Switch 2 Edition yet", Edition.name(card) + " needs its own pack (its own code and shaders). Prepare it on a computer with "
                         + "scripts/pack_android.py --program 1 and put it in the app's packs/" + Edition.program1(new File(card.gameDir)) + ", or switch the edition back on the game's page.",
-                        "Game: " + card.gameDir).setPositiveButton("OK", null).show();
+                        "Game: " + card.gameDir).setPositiveButton(tr("OK"), null).show();   // PEANUTS: zh-CN display text.
                 return;
             }
             card = e;
@@ -1423,7 +1426,7 @@ public final class MainActivity extends Activity {
         String gone = gone(g);
         if (gone != null) {
             Ui.explain(this, "Game file gone", GameFile.goneText(new File(g.gameDir).getName()), gone)
-                    .setPositiveButton("Pick it again", (d, w) -> relink(g)).setNeutralButton("Remove", (d, w) -> confirmRemove(g)).setNegativeButton("Cancel", null).show();
+                    .setPositiveButton(tr("Pick it again"), (d, w) -> relink(g)).setNeutralButton(tr("Remove"), (d, w) -> confirmRemove(g)).setNegativeButton(tr("Cancel"), null).show();   // PEANUTS: zh-CN display text.
             return;
         }
         String why = Profile.missing(g.titleId, g.name);
@@ -1439,7 +1442,7 @@ public final class MainActivity extends Activity {
         } catch (IOException e) {
             if (dump) packProblem(g, "This game has no pack that can be used yet.", e.getMessage(), pickPack);
             else Ui.explain(this, "No pack for this game", "This game has no pack that can be used. the game page › Folders picks one.", e.getMessage() + "\nPack: " + g.packDir)
-                    .setPositiveButton("OK", null).show();
+                    .setPositiveButton(tr("OK"), null).show();   // PEANUTS: zh-CN display text.
             return;
         }
         // The pack's code must be of the game build in the folder (else the game crashes at once): a plain message, and Prepare again from the dump, instead of a
@@ -1457,8 +1460,8 @@ public final class MainActivity extends Activity {
             }
             if (!playAnyway.contains(g.gameDir)) {
                 Ui.explain(this, "Untested game version", b.message + "\n\n" + PrepareText.ANYWAY_WARNING, b.detail + "\nPack: " + g.packDir)
-                        .setPositiveButton("Play anyway", (d, w) -> { playAnyway.add(g.gameDir); launch(g); })
-                        .setNegativeButton("Cancel", null).show();
+                        .setPositiveButton(tr("Play anyway"), (d, w) -> { playAnyway.add(g.gameDir); launch(g); })   // PEANUTS: zh-CN display text.
+                        .setNegativeButton(tr("Cancel"), null).show();
                 return;
             }
             android.util.Log.w("nxnative", g.titleId + ": Play anyway: " + b.kind + ": " + b.detail);
@@ -1478,12 +1481,12 @@ public final class MainActivity extends Activity {
             return;
         }
         if (lp != null) {
-            AlertDialog.Builder b = new PadFocus.Builder(this).setTitle("Shaders missing")
+            AlertDialog.Builder b = new PadFocus.Builder(this).setTitle(tr("Shaders missing"))   // PEANUTS: zh-CN display text.
                     .setMessage((dump ? Ondevice.shadersText(new File(g.packDir), g.titleId) : "Without them the game draws nothing.")
                             + "\n\n" + lp)
-                    .setNeutralButton("Pick pack folder", (d, w) -> pickPack.run()).setNegativeButton("Cancel", null);
-            if (dump) b.setPositiveButton("Prepare", (d, w) -> Ondevice.prepare(this, gd, false));
-            else b.setPositiveButton("Start anyway", (d, w) -> start(g));
+                    .setNeutralButton(tr("Pick pack folder"), (d, w) -> pickPack.run()).setNegativeButton(tr("Cancel"), null);
+            if (dump) b.setPositiveButton(tr("Prepare"), (d, w) -> Ondevice.prepare(this, gd, false));
+            else b.setPositiveButton(tr("Start anyway"), (d, w) -> start(g));
             b.show();
             return;
         }
@@ -1499,23 +1502,23 @@ public final class MainActivity extends Activity {
         boolean dump = Ondevice.isDump(gd);
         AlertDialog.Builder b = Ui.explain(this, "The pack cannot start this game", why + (dump ? "\n\nPrepare again rewrites the game's code from your dump (a few minutes; shaders are kept)." : ""),
                         (detail.isEmpty() ? "" : detail + "\n") + "Pack: " + g.packDir)
-                .setNegativeButton("Cancel", null).setNeutralButton("Pick pack folder", (d, w) -> pickPack.run());
-        if (dump) b.setPositiveButton("Prepare again", (d, w) -> Ondevice.prepare(this, gd, false));
+                .setNegativeButton(tr("Cancel"), null).setNeutralButton(tr("Pick pack folder"), (d, w) -> pickPack.run());   // PEANUTS: zh-CN display text.
+        if (dump) b.setPositiveButton(tr("Prepare again"), (d, w) -> Ondevice.prepare(this, gd, false));
         b.show();
     }
 
     private void start(Game g) {
         // PEANUTS begin: recommend Turnip before a system-driver launch, with a one-launch bypass.
         if (GpuDriver.launchesSystem(this, g.titleId) && Readiness.customDriversFit(Prefs.facts(this, Recommend.SYSTEM))) {   // only where a custom driver can load: a Mali, Xclipse or PowerVR GPU has its system driver alone
-            new PadFocus.Builder(this).setTitle("Turnip recommended")
-                    .setMessage("You're about to play with the system GPU driver. We recommend Turnip for better game compatibility and stability."
+            new PadFocus.Builder(this).setTitle(tr("Turnip recommended"))   // PEANUTS: zh-CN display text.
+                    .setMessage(tr("You're about to play with the system GPU driver. We recommend Turnip for better game compatibility and stability.")
                             + (GpuDriver.selected(this, g.titleId) != null ? "\n\nAn extra driver setting is forcing the system driver. Change that setting to use your selected driver." : ""))
-                    .setPositiveButton("Choose driver", (d, w) -> {
+                    .setPositiveButton(tr("Choose driver"), (d, w) -> {
                         gameSettings(g);
                         dev.peanuts.ui.DriverActivity.openForGame(this, g.titleId, g.name);
                     })
-                    .setNeutralButton("Play anyway", (d, w) -> startWithDriver(g))
-                    .setNegativeButton("Cancel", null).show();
+                    .setNeutralButton(tr("Play anyway"), (d, w) -> startWithDriver(g))   // PEANUTS: zh-CN display text.
+                    .setNegativeButton(tr("Cancel"), null).show();
             return;
         }
         startWithDriver(g);
@@ -1546,7 +1549,7 @@ public final class MainActivity extends Activity {
         box.setOrientation(LinearLayout.VERTICAL);
         Overlay.rows(this, box, null);
         dev.peanuts.overlay.HudSettings.rows(this, box);   // PEANUTS: overlay style and preset
-        Ui.sheet(this, "Overlay", box).setPositiveButton("Done", null).setOnDismissListener(d -> refreshSettings()).show();
+        Ui.sheet(this, "Overlay", box).setPositiveButton(tr("Done"), null).setOnDismissListener(d -> refreshSettings()).show();
     }
 
     private String resLabel() { return Prefs.windowName(Prefs.window(this), true); }
@@ -1554,11 +1557,11 @@ public final class MainActivity extends Activity {
     /** Game resolution: the window size the host gives the game (DM_WINDOW), from the next start */
     private void gameRes() {
         int i = Math.max(0, java.util.Arrays.asList(Prefs.WINDOWS).indexOf(Prefs.window(this)));
-        new PadFocus.Builder(this).setTitle("Game resolution").setSingleChoiceItems(Prefs.WINDOW_NAMES, i, (d, w) -> { Prefs.window(this, Prefs.WINDOWS[w]); refreshSettings(); d.dismiss(); })
-                .setNegativeButton("Cancel", null).show();
+        new PadFocus.Builder(this).setTitle(tr("Game resolution")).setSingleChoiceItems(L10n.items(Prefs.WINDOW_NAMES), i, (d, w) -> { Prefs.window(this, Prefs.WINDOWS[w]); refreshSettings(); d.dismiss(); })   // PEANUTS: zh-CN display text.
+                .setNegativeButton(tr("Cancel"), null).show();
     }
 
-    static String capLabel(int v) { return v < 0 ? "Default" : v == 0 ? "The game's own" : v + " fps"; }
+    static String capLabel(int v) { return v < 0 ? tr("Default") : v == 0 ? tr("The game's own") : String.format(Locale.ROOT, tr("%d fps"), v); }
 
     /** The frame rate cap the next start uses (Prefs.fpsCap, DM_FPS_TARGET); the in-game panel changes it while the game runs */
     private void fpsCap() {
@@ -1571,9 +1574,9 @@ public final class MainActivity extends Activity {
             labels[k + 1] = capLabel(v);
             if (v == cur) checked = k + 1;
         }
-        new PadFocus.Builder(this).setTitle("Frame rate cap")
+        new PadFocus.Builder(this).setTitle(tr("Frame rate cap"))   // PEANUTS: zh-CN display text.
                 .setSingleChoiceItems(labels, checked, (d, w) -> { Prefs.fpsCap(this, w == 0 ? -1 : Prefs.FPS_CAPS[w - 1]); refreshSettings(); d.dismiss(); })
-                .setNegativeButton("Cancel", null).show();
+                .setNegativeButton(tr("Cancel"), null).show();
     }
 
     /** Frame generation's settings and the Lossless.dll found (or a manual pick when it is in none of the known places) */
@@ -1581,10 +1584,10 @@ public final class MainActivity extends Activity {
         LinearLayout box = new LinearLayout(this);
         box.setOrientation(LinearLayout.VERTICAL);
         File dll = Lsfg.find(this);
-        Lsfg.rows(this, box, Lsfg.note + (dll != null ? "" : ". Put it in Documents/Emulation/bios or Switch2, or pick it."), () -> {});
+        Lsfg.rows(this, box, tr(Lsfg.note) + (dll != null ? "" : tr(". Put it in Documents/Emulation/bios or Switch2, or pick it.")), () -> {});   // PEANUTS: zh-CN display text.
         Ui.add(box, Ui.small(this, "Ported from Eden (GPL-3.0-or-later). Lossless.dll is yours; it is never part of the app."), 10);
-        Ui.sheet(this, "Frame generation", box).setPositiveButton("Done", null).setOnDismissListener(d -> refreshSettings())
-                .setNeutralButton("Pick Lossless.dll", (d, w) -> {
+        Ui.sheet(this, "Frame generation", box).setPositiveButton(tr("Done"), null).setOnDismissListener(d -> refreshSettings())
+                .setNeutralButton(tr("Pick Lossless.dll"), (d, w) -> {
                     Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("*/*");
                     startActivityForResult(i, PICK_DLL);
                 }).show();
@@ -1595,7 +1598,7 @@ public final class MainActivity extends Activity {
     /** The newest log of a game (titleId), or of any run (null) */
     private void shareLog(String titleId) {
         File log = LogProvider.newest(this, titleId);
-        if (log == null) { error(titleId == null ? "No log yet." : "No log of this game yet."); return; }
+        if (log == null) { error(titleId == null ? tr("No log yet.") : tr("No log of this game yet.")); return; }   // PEANUTS: zh-CN display text.
         shareLog(log);
     }
 
@@ -1616,24 +1619,24 @@ public final class MainActivity extends Activity {
         if (digest != null) clip.addItem(new ClipData.Item(LogProvider.uri(digest)));
         send.setClipData(clip);
         send.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        startActivity(Intent.createChooser(send, "Share " + log.getName()));
+        startActivity(Intent.createChooser(send, String.format(Locale.ROOT, tr("Share %s"), log.getName())));   // PEANUTS: zh-CN display text.
     }
 
     /** A web page (a rule's doc from ExitWatch's notice) in the phone's browser */
     void openLink(String url) {
         try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url))); }
-        catch (android.content.ActivityNotFoundException e) { error("No app can open " + url); }
+        catch (android.content.ActivityNotFoundException e) { error(String.format(Locale.ROOT, tr("No app can open %s"), url)); }   // PEANUTS: zh-CN display text.
     }
 
-    void error(String msg) { new PadFocus.Builder(this).setMessage(msg).setPositiveButton("OK", null).show(); }
+    void error(String msg) { new PadFocus.Builder(this).setMessage(tr(msg)).setPositiveButton(tr("OK"), null).show(); }
 
     private static String padPanelLabel(int v) {
-        return PadPanel.OPEN_NAMES[v] + ". By touch: swipe in from the right edge, or Back";
+        return tr(PadPanel.OPEN_NAMES[v]) + tr(". By touch: swipe in from the right edge, or Back");
     }
-    private static String touchLabel(int m) { return m == TouchControls.MODE_AUTO ? "Auto: hidden while a controller is connected" : TouchControls.MODE_NAMES[m]; }
-    private static String rotationLabel(boolean auto) { return auto ? "Automatic: the game follows the phone's rotation, portrait too" : "Landscape: the game window stays horizontal on a phone"; }
+    private static String touchLabel(int m) { return m == TouchControls.MODE_AUTO ? tr("Auto: hidden while a controller is connected") : tr(TouchControls.MODE_NAMES[m]); }
+    private static String rotationLabel(boolean auto) { return auto ? tr("Automatic: the game follows the phone's rotation, portrait too") : tr("Landscape: the game window stays horizontal on a phone"); }
     /** A default's choice in Settings (no "Default" entry: this is the default) */
     private void pick(String title, String[] items, int cur, java.util.function.IntConsumer set) {
-        new PadFocus.Builder(this).setTitle(title).setSingleChoiceItems(items, cur, (d, w) -> { set.accept(w); refreshSettings(); d.dismiss(); }).setNegativeButton("Cancel", null).show();
+        new PadFocus.Builder(this).setTitle(tr(title)).setSingleChoiceItems(L10n.items(items), cur, (d, w) -> { set.accept(w); refreshSettings(); d.dismiss(); }).setNegativeButton(tr("Cancel"), null).show();
     }
 }

@@ -1,5 +1,7 @@
 package dev.nxnative.android;
 
+import static dev.peanuts.i18n.L10n.tr;   // PEANUTS: zh-CN display text.
+
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
@@ -65,7 +67,7 @@ final class StorageUi {
         List<Game> games = Game.load(a);
         String why = busy(a, games);
         if (why != null) { a.error(why); return; }
-        AlertDialog wait = new PadFocus.Builder(a).setMessage("Looking at the app's storage…").setCancelable(false).show();
+        AlertDialog wait = new PadFocus.Builder(a).setMessage(tr("Looking at the app's storage…")).setCancelable(false).show();   // PEANUTS: zh-CN display text.
         Context app = a.getApplicationContext();
         new Thread(() -> {
             StorageScan.Roots r = roots(app, games);
@@ -89,16 +91,16 @@ final class StorageUi {
         Runnable sum = () -> {
             long n = 0;
             for (int i = 0; i < boxes.size(); i++) if (boxes.get(i).isChecked()) n += order.get(i).bytes;
-            total.setText("Found " + StorageScan.bytes(StorageScan.total(items)) + " that can go; " + StorageScan.bytes(n) + " ticked. Saves are never listed or removed.");
+            total.setText(String.format(tr("Found %1$s that can go; %2$s ticked. Saves are never listed or removed."), StorageScan.bytes(StorageScan.total(items)), StorageScan.bytes(n)));   // PEANUTS: zh-CN display text.
         };
         if (items.isEmpty()) Ui.add(box, Ui.small(a, "Nothing to clean up."), 8);
         for (Map.Entry<StorageScan.Kind, List<StorageScan.Item>> e : StorageScan.byKind(items).entrySet()) {
             StorageScan.Kind k = e.getKey();
-            Ui.add(box, Ui.section(a, k.title + " · " + StorageScan.bytes(StorageScan.total(e.getValue()))), 16);
+            Ui.add(box, Ui.section(a, tr(k.title) + " · " + StorageScan.bytes(StorageScan.total(e.getValue()))), 16);   // PEANUTS: zh-CN display text.
             Ui.add(box, Ui.small(a, k.about), 2);
             for (StorageScan.Item it : e.getValue()) {
                 CheckBox cb = new CheckBox(a);
-                cb.setText(it.label + " · " + StorageScan.bytes(it.bytes));
+                cb.setText(tr(it.label) + " · " + StorageScan.bytes(it.bytes));   // PEANUTS: zh-CN display text.
                 cb.setChecked(k.preselected);
                 cb.setOnCheckedChangeListener((b, on) -> sum.run());
                 Ui.add(box, cb, 2);
@@ -112,9 +114,9 @@ final class StorageUi {
             Ui.add(box, Ui.small(a, "A game's pack and shaders are kept while it is in your list. Remove game data… shows what it takes first."), 2);
         }
         AlertDialog[] d = {null};
-        for (Game g : games) Ui.add(box, Ui.button(a, "Remove " + g.name + " data…", Ui.Kind.TONAL, v -> { d[0].dismiss(); gameData(a, r, games, g); }), 6);
-        AlertDialog.Builder b = Ui.sheet(a, "Storage", box).setNegativeButton("Close", null);
-        if (!items.isEmpty()) b.setPositiveButton("Remove ticked", (x, w) -> {
+        for (Game g : games) Ui.add(box, Ui.button(a, String.format(tr("Remove %s data…"), g.name), Ui.Kind.TONAL, v -> { d[0].dismiss(); gameData(a, r, games, g); }), 6);   // PEANUTS: zh-CN display text.
+        AlertDialog.Builder b = Ui.sheet(a, "Storage", box).setNegativeButton(tr("Close"), null);
+        if (!items.isEmpty()) b.setPositiveButton(tr("Remove ticked"), (x, w) -> {
             List<StorageScan.Item> pick = new ArrayList<>();
             for (int i = 0; i < boxes.size(); i++) if (boxes.get(i).isChecked()) pick.add(order.get(i));
             if (pick.isEmpty()) return;
@@ -140,7 +142,7 @@ final class StorageUi {
         Ui.confirmDanger(a, title, m, "Remove", () -> {
             String why = busy(a, Game.load(a));   // something may have started while the list showed
             if (why != null) { a.error(why); return; }
-            AlertDialog wait = new PadFocus.Builder(a).setMessage("Removing…").setCancelable(false).show();
+            AlertDialog wait = new PadFocus.Builder(a).setMessage(tr("Removing…")).setCancelable(false).show();   // PEANUTS: zh-CN display text.
             new Thread(() -> {
                 StorageScan.Result res = StorageScan.delete(r, l);
                 a.runOnUiThread(() -> {
@@ -148,8 +150,8 @@ final class StorageUi {
                     if (gone(a)) return;
                     a.refresh();
                     String done = StorageScan.bytes(res.freed) + " freed.";
-                    if (res.problems.isEmpty()) new PadFocus.Builder(a).setMessage(done).setPositiveButton("OK", null).show();
-                    else Ui.explain(a, "Not everything was removed", done, String.join("\n", res.problems)).setPositiveButton("OK", null).show();
+                    if (res.problems.isEmpty()) new PadFocus.Builder(a).setMessage(done).setPositiveButton(tr("OK"), null).show();   // PEANUTS: zh-CN display text.
+                    else Ui.explain(a, "Not everything was removed", done, String.join("\n", res.problems)).setPositiveButton(tr("OK"), null).show();
                 });
             }, "nxstorage-remove").start();
         });

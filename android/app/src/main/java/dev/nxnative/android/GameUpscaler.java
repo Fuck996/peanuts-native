@@ -1,5 +1,7 @@
 package dev.nxnative.android;
 
+import static dev.peanuts.i18n.L10n.tr;   // PEANUTS: zh-CN display text.
+
 import android.content.Context;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
@@ -20,6 +22,12 @@ import java.util.List;
  */
 final class GameUpscaler {
     private GameUpscaler() {}
+
+    private static String[] translated(String[] labels) {
+        String[] display = labels.clone();
+        for (int i = 0; i < display.length; ++i) display[i] = tr(display[i]);   // PEANUTS: zh-CN display text.
+        return display;
+    }
 
     /** The choices in the order shown, and each one's DM_VK_NDSR value (3 nearest-neighbour blit, 1 bilinear blit, 2 FSR 1, 0 the game's network, 4 Qualcomm's SGSR 1).
      *  New choices go at the end: the stored choice is an index into this list */
@@ -120,16 +128,16 @@ final class GameUpscaler {
     static void rows(Context c, String titleId, LinearLayout box) {
         if (Prefs.dlssGame(titleId)) { dlssRows(c, titleId, box); return; }
         TextView head = new TextView(c);
-        head.setText("Upscaler");
+        head.setText(tr("Upscaler"));   // PEANUTS: zh-CN display text.
         head.setPadding(0, 24, 0, 0);
         box.addView(head);
         RadioGroup g = new RadioGroup(c);
-        for (int i = 0; i < MODES.length; i++) { RadioButton b = new RadioButton(c); b.setText(MODES[i]); b.setId(3100 + i); g.addView(b); if (i == mode(c, titleId)) b.setChecked(true); }
+        for (int i = 0; i < MODES.length; i++) { RadioButton b = new RadioButton(c); b.setText(tr(MODES[i])); b.setId(3100 + i); g.addView(b); if (i == mode(c, titleId)) b.setChecked(true); }   // PEANUTS: zh-CN display text.
         box.addView(g);
-        TextView l = new TextView(c); l.setText("FSR sharpness"); box.addView(l);
+        TextView l = new TextView(c); l.setText(tr("FSR sharpness")); box.addView(l);
         RadioGroup s = new RadioGroup(c);
         s.setOrientation(LinearLayout.HORIZONTAL);
-        for (int i = 0; i < SHARPS.length; i++) { RadioButton b = new RadioButton(c); b.setText(SHARP_NAMES[i]); b.setId(3200 + i); s.addView(b); if (SHARPS[i] == sharp(c, titleId)) b.setChecked(true); }
+        for (int i = 0; i < SHARPS.length; i++) { RadioButton b = new RadioButton(c); b.setText(tr(SHARP_NAMES[i])); b.setId(3200 + i); s.addView(b); if (SHARPS[i] == sharp(c, titleId)) b.setChecked(true); }
         s.setOnCheckedChangeListener((gr, id) -> sharp(c, titleId, SHARPS[id - 3200]));
         box.addView(s);
         Runnable shown = () -> { int v = mode(c, titleId) == MODE_FSR ? android.view.View.VISIBLE : android.view.View.GONE; l.setVisibility(v); s.setVisibility(v); };
@@ -140,11 +148,11 @@ final class GameUpscaler {
     /** A game on the DLSS stand-in: "Upscaler" (the stand-in's mode) with Motion clarity and Temporal sharpness under GSR 2, the sharpness alone ("FSR sharpness") under FSR 1. Each applied at once */
     private static void dlssRows(Context c, String titleId, LinearLayout box) {
         TextView head = new TextView(c);
-        head.setText("Upscaler");
+        head.setText(tr("Upscaler"));   // PEANUTS: zh-CN display text.
         head.setPadding(0, 24, 0, 0);
         box.addView(head);
         RadioGroup g = new RadioGroup(c);
-        for (int i = 0; i < DlssTune.MODE_NAMES.length; i++) { RadioButton b = new RadioButton(c); b.setText(DlssTune.MODE_NAMES[i]); b.setId(3300 + i); g.addView(b); if (i == dlssMode(c, titleId)) b.setChecked(true); }
+        for (int i = 0; i < DlssTune.MODE_NAMES.length; i++) { RadioButton b = new RadioButton(c); b.setText(tr(DlssTune.MODE_NAMES[i])); b.setId(3300 + i); g.addView(b); if (i == dlssMode(c, titleId)) b.setChecked(true); }   // PEANUTS: zh-CN display text.
         box.addView(g);
         TextView clHead = new TextView(c); box.addView(clHead);
         android.view.View cl = StepSlider.view(c, "Motion clarity", DlssTune.clarityNames(), clarity(c, titleId), GameSettings.CLARITY_LEFT, GameSettings.CLARITY_RIGHT,
@@ -152,12 +160,12 @@ final class GameUpscaler {
         box.addView(cl);
         TextView shHead = new TextView(c); box.addView(shHead);
         android.view.View sh = StepSlider.view(c, DlssTune.sharpTitle(dlssMode(c, titleId)), DlssTune.sharpNames(), dlssSharp(c, titleId), "Softer", "Sharper",
-                                               t -> shHead.setText(DlssTune.sharpTitle(dlssMode(c, titleId)) + t.substring(t.indexOf(':'))), i -> dlssSharp(c, titleId, i));
+                                               t -> shHead.setText(tr(DlssTune.sharpTitle(dlssMode(c, titleId))) + t.substring(t.indexOf(':'))), i -> dlssSharp(c, titleId, i));   // PEANUTS: zh-CN display text.
         box.addView(sh);
         Runnable shown = () -> {
             int m = dlssMode(c, titleId), vc = DlssTune.showsClarity(m) ? android.view.View.VISIBLE : android.view.View.GONE, vs = DlssTune.showsSharp(m) ? android.view.View.VISIBLE : android.view.View.GONE;
             clHead.setVisibility(vc); cl.setVisibility(vc); shHead.setVisibility(vs); sh.setVisibility(vs);
-            shHead.setText(StepSlider.title(DlssTune.sharpTitle(m), DlssTune.sharpNames(), dlssSharp(c, titleId)));
+            shHead.setText(StepSlider.title(tr(DlssTune.sharpTitle(m)), translated(DlssTune.sharpNames()), dlssSharp(c, titleId)));   // PEANUTS: zh-CN display text.
         };
         shown.run();
         g.setOnCheckedChangeListener((gr, id) -> { dlssMode(c, titleId, id - 3300); shown.run(); });

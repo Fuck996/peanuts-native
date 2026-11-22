@@ -1,5 +1,7 @@
 package dev.nxnative.android;
 
+import dev.peanuts.i18n.L10n;   // PEANUTS: zh-CN display text.
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -75,7 +77,7 @@ final class Ui {
 
     static TextView text(Context c, CharSequence s, float sp, int colorRes, int weight) {
         TextView t = new TextView(c);
-        t.setText(s);
+        t.setText(L10n.tr(s));   // PEANUTS: zh-CN display text.
         t.setTextSize(sp);
         t.setTextColor(col(c, colorRes));
         t.setTypeface(face(weight));
@@ -120,8 +122,8 @@ final class Ui {
     }
 
     static void status(TextView t, CharSequence s, int colorRes) {
-        t.setText("●  " + s);
-        t.setContentDescription(s);   // the dot is decoration: a screen reader says the state only
+        t.setText("●  " + L10n.tr(s));   // PEANUTS: zh-CN display text.
+        t.setContentDescription(L10n.tr(s));   // the dot is decoration: a screen reader says the state only
         t.setAccessibilityLiveRegion(View.ACCESSIBILITY_LIVE_REGION_POLITE);   // the state changes while the screen shows (Checking… → Ready): said when it does
         t.setTextColor(col(t.getContext(), colorRes));
     }
@@ -148,7 +150,7 @@ final class Ui {
             copy = button(c, "Copy details", Kind.QUIET, v -> {
                 android.content.ClipboardManager cm = c.getSystemService(android.content.ClipboardManager.class);
                 if (cm != null) cm.setPrimaryClip(android.content.ClipData.newPlainText("Peanuts Native details", text.getText()));   // PEANUTS: rebrand
-                android.widget.Toast.makeText(c, "Details copied", android.widget.Toast.LENGTH_SHORT).show();
+                android.widget.Toast.makeText(c, L10n.tr("Details copied"), android.widget.Toast.LENGTH_SHORT).show();
             });
             copy.setPadding(dp(c, 4), 0, dp(c, 4), 0);
             copy.setVisibility(GONE);
@@ -161,8 +163,8 @@ final class Ui {
         void open(boolean on) {
             text.setVisibility(on ? VISIBLE : GONE);
             copy.setVisibility(on ? VISIBLE : GONE);
-            toggle.setText(on ? "Hide details" : "Details");
-            toggle.setContentDescription(on ? "Hide details" : "Show details");
+            toggle.setText(L10n.tr(on ? "Hide details" : "Details"));   // PEANUTS: zh-CN display text.
+            toggle.setContentDescription(L10n.tr(on ? "Hide details" : "Show details"));
         }
 
         /** The details to show (the view hides when there are none); an open view stays open */
@@ -189,12 +191,12 @@ final class Ui {
 
     /** A small warning chip ("! Pack from other tools") whose tap shows the whole sentence in a small dialog */
     static TextView warnChip(Activity a, CharSequence s, CharSequence title, CharSequence message) {
-        TextView t = text(a, "!  " + s, 12, R.color.bn_text, 600);
+        TextView t = text(a, "!  " + L10n.tr(s), 12, R.color.bn_text, 600);   // PEANUTS: zh-CN display text.
         t.setBackground(ripple(a, round(col(a, R.color.bn_warn_tint), dp(a, 999), 0, 0)));
         t.setPadding(dp(a, 10), dp(a, 5), dp(a, 12), dp(a, 5));
         t.setSingleLine(true);
         t.setEllipsize(TextUtils.TruncateAt.END);
-        t.setContentDescription(s + ": tap for details");
+        t.setContentDescription(L10n.tr(s) + L10n.tr(": tap for details"));   // PEANUTS: zh-CN display text.
         t.setOnClickListener(v -> new PadFocus.Builder(a).setTitle(title).setMessage(message).setPositiveButton("OK", null).show());
         return t;
     }
@@ -415,7 +417,7 @@ final class Ui {
         Button b = new Button(c) {
             @Override public void setEnabled(boolean on) { super.setEnabled(on); setAlpha(on ? 1f : 0.42f); }
         };
-        b.setText(s);
+        b.setText(L10n.tr(s));   // PEANUTS: zh-CN display text.
         b.setAllCaps(false);
         b.setTextSize(15);
         b.setTypeface(face(k == Kind.PRIMARY ? 700 : 600));
@@ -463,11 +465,11 @@ final class Ui {
             lp.leftMargin = dp(c, 10);
             addView(label, lp);
             setIcon(drawable);
-            setContentDescription(s);
+            setContentDescription(L10n.tr(s));   // PEANUTS: zh-CN display text.
             setOnClickListener(l);
         }
 
-        void setText(CharSequence s) { label.setText(s); setContentDescription(s); }
+        void setText(CharSequence s) { label.setText(L10n.tr(s)); setContentDescription(L10n.tr(s)); }   // PEANUTS: zh-CN display text.
 
         void setIcon(int drawable) {
             icon.setImageDrawable(drawable == 0 ? null : Ui.icon(getContext(), drawable, textColor(kind)));
@@ -486,7 +488,7 @@ final class Ui {
         v.setImageDrawable(icon(c, drawable, R.color.bn_text));
         v.setScaleType(ImageView.ScaleType.CENTER);
         style(c, v, k, 14);
-        v.setContentDescription(description);
+        v.setContentDescription(L10n.tr(description));   // PEANUTS: zh-CN display text.
         v.setClickable(true);
         v.setFocusable(true);
         v.setOnClickListener(l);
@@ -620,25 +622,25 @@ final class Ui {
             return this;
         }
 
-        Setting value(CharSequence s) { value.setText(s); value.setVisibility(s == null || s.length() == 0 ? View.GONE : View.VISIBLE); return this; }
+        Setting value(CharSequence s) { value.setText(L10n.tr(s)); value.setVisibility(s == null || s.length() == 0 ? View.GONE : View.VISIBLE); return this; }   // PEANUTS: zh-CN display text.
         /** What the setting needs before it works, in a short line of its own under the value (null: none), so the value still says what the setting does */
-        Setting status(CharSequence s) { status.setText(s); status.setVisibility(s == null || s.length() == 0 ? View.GONE : View.VISIBLE); return this; }
+        Setting status(CharSequence s) { status.setText(L10n.tr(s)); status.setVisibility(s == null || s.length() == 0 ? View.GONE : View.VISIBLE); return this; }
         /** The tag on the tags' line (null: none); warn picks the warning tint (Ui.tag) */
         Setting tag(Context c, CharSequence s, boolean warn) {
             if (s == null || s.length() == 0) { tag.setVisibility(View.GONE); line(); return this; }
-            tag.setText(s); styleTag(c, tag, warn); tag.setVisibility(View.VISIBLE);
+            tag.setText(L10n.tr(s)); styleTag(c, tag, warn); tag.setVisibility(View.VISIBLE);   // PEANUTS: zh-CN display text.
             line();
             return this;
         }
         /** A fixed label before the tag (Experimental), in the warning tint (null: none) */
         Setting badge(CharSequence s) {
-            badge.setText(s == null ? "" : s);
+            badge.setText(s == null ? "" : L10n.tr(s));   // PEANUTS: zh-CN display text.
             badge.setVisibility(s == null || s.length() == 0 ? View.GONE : View.VISIBLE);
             line();
             return this;
         }
         /** The muted line under the value (null: none) */
-        Setting note(CharSequence s) { note.setText(s); note.setVisibility(s == null || s.length() == 0 ? View.GONE : View.VISIBLE); return this; }
+        Setting note(CharSequence s) { note.setText(L10n.tr(s)); note.setVisibility(s == null || s.length() == 0 ? View.GONE : View.VISIBLE); return this; }   // PEANUTS: zh-CN display text.
 
         private CharSequence onText, offText;
         /** A switch row's value line in words for each state (what On does, what Off does): it follows the switch, so it never contradicts it */
@@ -731,7 +733,7 @@ final class Ui {
             tab.setClickable(true);
             tab.setFocusable(true);
             tab.setSelected(on);
-            tab.setContentDescription(labels[k] + (on ? ", tab, selected" : ", tab"));
+            tab.setContentDescription(L10n.tr(labels[k]) + L10n.tr(on ? ", tab, selected" : ", tab"));   // PEANUTS: zh-CN display text.
             tab.setOnClickListener(v -> { if (i != sel) pick.accept(i); });
             row.addView(tab, wrap());
         }
@@ -753,7 +755,7 @@ final class Ui {
         t.setClickable(true);
         t.setFocusable(true);
         t.setSelected(selected);
-        t.setContentDescription(label);
+        t.setContentDescription(L10n.tr(label));
         t.setOnClickListener(dev.peanuts.ui.Feel.nav(l));   // PEANUTS: a rail entry clicks, and its section's pane enters (dev.peanuts.ui.Feel)
         return t;
     }
@@ -771,10 +773,10 @@ final class Ui {
 
     /** A state chip's words again (they become known later) */
     static void statusChip(TextView t, CharSequence s) {
-        android.text.SpannableString sp = new android.text.SpannableString("●  " + s);
+        android.text.SpannableString sp = new android.text.SpannableString("●  " + L10n.tr(s));   // PEANUTS: zh-CN display text.
         sp.setSpan(new android.text.style.ForegroundColorSpan(col(t.getContext(), R.color.bn_leaf)), 0, 1, 0);
         t.setText(sp);
-        t.setContentDescription(s);
+        t.setContentDescription(L10n.tr(s));
     }
 
     /** A small rounded tag (a row's "Recommended" or "Changed"): the accent on the tint, or with warn the danger colour on the warning tint; both read in light and dark */

@@ -1,5 +1,7 @@
 package dev.nxnative.android;
 
+import static dev.peanuts.i18n.L10n.tr;   // PEANUTS: zh-CN display text.
+
 import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -119,16 +121,16 @@ final class SaveUi {
             pendingFor = g;
             Intent i = new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("application/zip")
                     .putExtra(Intent.EXTRA_TITLE, SaveZip.zipName(g.titleId, stamp()));
-            Toast.makeText(a, "Pick where the backup goes (a .zip)", Toast.LENGTH_LONG).show();
+            Toast.makeText(a, tr("Pick where the backup goes (a .zip)"), Toast.LENGTH_LONG).show();   // PEANUTS: zh-CN display text.
             a.startActivityForResult(i, CREATE_EXPORT);
             return;
         }
         File to = backups(g);
         run(a, g, "Backing up " + g.name + "'s save…", () -> SaveStore.backup(save, to, stamp()), (r, err) -> {
-            if (err != null) { Ui.explain(a, "No backup made", "The save could not be backed up. It was only read, never changed.", err + "\nSave: " + save).setPositiveButton("OK", null).show(); return; }
+            if (err != null) { Ui.explain(a, "No backup made", "The save could not be backed up. It was only read, never changed.", err + "\nSave: " + save).setPositiveButton(tr("OK"), null).show(); return; }   // PEANUTS: zh-CN display text.
             SaveStore.Backup b = (SaveStore.Backup) r;
             Ui.explain(a, "Saves backed up", b.files + " files, " + SaveStore.size(b.bytes) + (b.device ? ", with the device save" : "") + ", checked file by file. "
-                    + "The app never deletes a backup.", b.dir.getPath()).setPositiveButton("OK", null).show();
+                    + "The app never deletes a backup.", b.dir.getPath()).setPositiveButton(tr("OK"), null).show();
         });
     }
 
@@ -140,7 +142,7 @@ final class SaveUi {
         if (save == null || !hasSave(save)) { a.error(g.name + " has no save: nothing to delete."); return; }
         String st = stamp();
         File to = target(a, g);
-        Ui.confirmDanger(a, "Delete " + g.name + "'s save data?", "The game starts from the beginning the next time. The save is backed up first (checked), so "
+        Ui.confirmDanger(a, String.format(tr("Delete %s's save data?"), g.name), "The game starts from the beginning the next time. The save is backed up first (checked), so "   // PEANUTS: zh-CN display text.
                 + "Restore saves can bring it back. No backup is deleted."
                 + (Users.list(a).size() > 1 ? "\n\nThis is the save of the first user (" + Users.list(a).get(0).name + "). The saves of the other users (Settings › Users) are in folders of "
                         + "their own beside it and stay as they are, as Back up saves and Restore saves leave them." : "")   // (upstream's users, since Banana Native v0.3.22: Users.saveDir)
@@ -156,12 +158,12 @@ final class SaveUi {
                     }, (r, err) -> {
                         if (err != null) {
                             Ui.explain(a, "Save not deleted", r == null && !hasSave(save) ? "The save is gone, but something went wrong at the end." : "Something went wrong. What is left of the save is as it was; "
-                                    + "if a backup was made it is in Restore saves.", err + "\nSave: " + save).setPositiveButton("OK", null).show();
+                                    + "if a backup was made it is in Restore saves.", err + "\nSave: " + save).setPositiveButton(tr("OK"), null).show();   // PEANUTS: zh-CN display text.
                             return;
                         }
                         SaveStore.Backup b = (SaveStore.Backup) r;
                         Ui.explain(a, "Save data deleted", g.name + " starts from the beginning. The old save (" + b.files + " files, " + SaveStore.size(b.bytes)
-                                + ") is in Restore saves.", b.dir.getPath()).setPositiveButton("OK", null).show();
+                                + ") is in Restore saves.", b.dir.getPath()).setPositiveButton(tr("OK"), null).show();   // PEANUTS: zh-CN display text.
                     });
                 });
     }
@@ -194,13 +196,13 @@ final class SaveUi {
         }, (r, err) -> {
             if (err != null) {
                 Ui.explain(a, "Backup not exported", "The zip could not be written or did not check out. The save was only read, never changed.", err + "\nZip: " + doc)
-                        .setPositiveButton("OK", null).show();
+                        .setPositiveButton(tr("OK"), null).show();   // PEANUTS: zh-CN display text.
                 return;
             }
             SaveStore.Backup b = (SaveStore.Backup) r;
             Ui.explain(a, "Saves backed up", b.files + " files, " + SaveStore.size(b.bytes) + (b.device ? ", with the device save" : "") + ", in the zip you picked, checked "
                     + "file by file. Import save… brings it back. A copy stays in the app (Restore saves lists it).", "Zip: " + doc + "\nIn the app: " + b.dir)
-                    .setPositiveButton("OK", null).show();
+                    .setPositiveButton(tr("OK"), null).show();   // PEANUTS: zh-CN display text.
         });
     }
 
@@ -218,29 +220,29 @@ final class SaveUi {
             labels[i] = SaveStore.when(b.name) + "\n" + b.files + " files, " + SaveStore.size(b.bytes) + (b.device ? " (with the device save)" : "") + from;
         }
         labels[l.size()] = "Import save… (a .zip or a folder)";
-        new PadFocus.Builder(a).setTitle(l.isEmpty() ? "No backups of " + g.name + " here yet" : "Restore " + g.name + "'s save from")
+        new PadFocus.Builder(a).setTitle(l.isEmpty() ? String.format(tr("No backups of %s here yet"), g.name) : String.format(tr("Restore %s's save from"), g.name))   // PEANUTS: zh-CN display text.
                 .setItems(labels, (d, w) -> {
                     if (w == l.size()) importPick(a, g);
                     else confirm(a, g, l.get(w).dir, SaveStore.when(l.get(w).name), null);
                 })
-                .setNegativeButton("Cancel", null).show();
+                .setNegativeButton(tr("Cancel"), null).show();   // PEANUTS: zh-CN display text.
     }
 
     /** Import save…: a .zip or a folder, through the system picker */
     static void importPick(MainActivity a, Game g) {
         if (!ready(a, g, "import")) return;
-        new PadFocus.Builder(a).setTitle("Import " + g.name + "'s save from")
+        new PadFocus.Builder(a).setTitle(String.format(tr("Import %s's save from"), g.name))   // PEANUTS: zh-CN display text.
                 .setItems(new String[] {"A .zip (from Back up saves, or a zipped save folder)", "A save folder"}, (d, w) -> {
                     pendingFor = g;
                     if (w == 0) {
                         Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("*/*");
                         a.startActivityForResult(i, PICK_IMPORT_ZIP);
                     } else {
-                        Toast.makeText(a, "Pick the save folder (the one that holds the save's files)", Toast.LENGTH_LONG).show();
+                        Toast.makeText(a, tr("Pick the save folder (the one that holds the save's files)"), Toast.LENGTH_LONG).show();   // PEANUTS: zh-CN display text.
                         a.startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE), PICK_IMPORT_DIR);
                     }
                 })
-                .setNegativeButton("Cancel", null).show();
+                .setNegativeButton(tr("Cancel"), null).show();   // PEANUTS: zh-CN display text.
     }
 
     /** MainActivity.onActivityResult: the documents of Back up saves (export) and Import save… */
@@ -270,7 +272,7 @@ final class SaveUi {
         }, (r, err) -> {
             if (err != null) {
                 SaveStore.deleteTree(st);
-                Ui.explain(a, "Not imported", "That " + (tree ? "folder" : "zip") + " could not be read as a save. Nothing was changed.", err + "\n" + doc).setPositiveButton("OK", null).show();
+                Ui.explain(a, "Not imported", "That " + (tree ? "folder" : "zip") + " could not be read as a save. Nothing was changed.", err + "\n" + doc).setPositiveButton(tr("OK"), null).show();   // PEANUTS: zh-CN display text.
                 return;
             }
             confirm(a, g, (File) r, tree ? "the picked folder" : "the picked zip", () -> SaveStore.deleteTree(st));
@@ -321,7 +323,7 @@ final class SaveUi {
         if (why != null) { if (after != null) after.run(); a.error("Not restored: " + why + "."); return; }
         String st = stamp();
         File to = target(a, g);
-        Ui.confirmDanger(a, "Restore " + g.name + "'s save?", "Your current save is replaced with " + what + ". It is backed up first (checked), so Restore "
+        Ui.confirmDanger(a, String.format(tr("Restore %s's save?"), g.name), "Your current save is replaced with " + what + ". It is backed up first (checked), so Restore "   // PEANUTS: zh-CN display text.
                 + "saves… can undo this. No backup is deleted.\n\nSave: " + save + "\nBackup of it: " + new File(to, st + SaveStore.BEFORE_RESTORE),
                 "Restore", () -> {
                     if (!ready(a, g, "restore")) { if (after != null) after.run(); return; }
@@ -329,7 +331,7 @@ final class SaveUi {
                         if (after != null) after.run();
                         if (err != null) {
                             Ui.explain(a, "Not restored", "The save is as it was" + (SaveStore.pending(save) ? ", but for a swap that finishes at the next backup, restore or game start" : "")
-                                    + ".", err + "\nSave: " + save).setPositiveButton("OK", null).show();
+                                    + ".", err + "\nSave: " + save).setPositiveButton(tr("OK"), null).show();   // PEANUTS: zh-CN display text.
                             return;
                         }
                         SaveStore.Restored x = (SaveStore.Restored) r;

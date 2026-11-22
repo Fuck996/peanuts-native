@@ -1,5 +1,8 @@
 package dev.peanuts.ui;
 
+import static dev.peanuts.i18n.L10n.tr;
+import static dev.peanuts.i18n.BuildZh.text;
+
 import android.app.Activity;
 import android.app.ActivityOptions;
 import android.app.AlertDialog;
@@ -58,7 +61,7 @@ public final class BuildLogUi {
         TextView text = PUi.body(a, "");
         text.setVisibility(View.GONE);
         PUi.add(box, text, 4);
-        AlertDialog d = PUi.sheet(a, "Build log of " + shown, box).setPositiveButton("Share", null).setNeutralButton("Save to a folder", null).setNegativeButton("Cancel", null).show();
+        AlertDialog d = PUi.sheet(a, text(tr("Build log of %s"), shown), box).setPositiveButton(tr("Share"), null).setNeutralButton(tr("Save to a folder"), null).setNegativeButton(tr("Cancel"), null).show();
         Button share = d.getButton(AlertDialog.BUTTON_POSITIVE), save = d.getButton(AlertDialog.BUTTON_NEUTRAL);
         share.setEnabled(false);
         save.setEnabled(false);
@@ -74,10 +77,10 @@ public final class BuildLogUi {
                 bar.setVisibility(View.GONE);
                 text.setVisibility(View.VISIBLE);
                 if (fm == null || !fm.anything) {
-                    text.setText(fm == null ? "The build log could not be made: " + sentence(fe) : "No build log of " + shown + " yet. A log is written from the next build on.");
+                    text.setText(fm == null ? text(tr("The build log could not be made: %s"), sentence(fe)) : text(tr("No build log of %s yet. A log is written from the next build on."), shown));
                     share.setVisibility(View.GONE);
                     save.setVisibility(View.GONE);
-                    d.getButton(AlertDialog.BUTTON_NEGATIVE).setText("OK");
+                    d.getButton(AlertDialog.BUTTON_NEGATIVE).setText(tr("OK"));
                     return;
                 }
                 text.setText(contents(fm));
@@ -91,12 +94,11 @@ public final class BuildLogUi {
 
     /** What the sheet says the bundle holds */
     static String contents(BuildLogShare.Made m) {
-        return m.files + " files, " + BuildLogBundle.size(m.bytes) + ". Holds the build's step logs, its job file, the app's own messages and a summary of this phone "
-                + "(model, Android, memory, free space). No keys, game files or saves." + (m.cut ? " Long logs are cut to their first and last part." : "");
+        return text(tr("%d files, %s. Holds the build's step logs, its job file, the app's own messages and a summary of this phone (model, Android, memory, free space). No keys, game files or saves."), m.files, BuildLogBundle.size(m.bytes)) + (m.cut ? tr(" Long logs are cut to their first and last part.") : "");
     }
 
     private static String sentence(String s) {
-        if (s == null || s.isEmpty()) return "unknown reason.";
+        if (s == null || s.isEmpty()) return tr("unknown reason.");
         return s.endsWith(".") ? s : s + ".";
     }
 
@@ -104,16 +106,16 @@ public final class BuildLogUi {
     static void send(Activity a, File zip, String name) {
         Uri uri = BuildLogProvider.uri(a, zip);
         Intent send = new Intent(Intent.ACTION_SEND).setType("application/zip").putExtra(Intent.EXTRA_STREAM, uri)
-                .putExtra(Intent.EXTRA_SUBJECT, "Peanuts Native build log: " + name).putExtra(Intent.EXTRA_TITLE, zip.getName());
+                .putExtra(Intent.EXTRA_SUBJECT, text(tr("Peanuts Native build log: %s"), name)).putExtra(Intent.EXTRA_TITLE, zip.getName());
         send.setClipData(ClipData.newRawUri(zip.getName(), uri));
         send.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        Intent chooser = Intent.createChooser(send, "Share the build log");
+        Intent chooser = Intent.createChooser(send, tr("Share the build log"));
         try {
             a.startActivity(chooser, onThisDisplay(a));
         } catch (ActivityNotFoundException | SecurityException e) {
             Log.w(TAG, "share build log: " + e);
-            new AlertDialog.Builder(a).setMessage("No app on this phone can share a file. Save it to a folder instead.")
-                    .setPositiveButton("Save to a folder", (x, w) -> saveTo(a, zip)).setNegativeButton("Cancel", null).show();
+            new AlertDialog.Builder(a).setMessage(tr("No app on this phone can share a file. Save it to a folder instead."))
+                    .setPositiveButton(tr("Save to a folder"), (x, w) -> saveTo(a, zip)).setNegativeButton(tr("Cancel"), null).show();
         }
     }
 
@@ -127,7 +129,7 @@ public final class BuildLogUi {
         a.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(SAVE, zip.getPath()).apply();   // the picker may outlive this process
         Intent i = new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("application/zip").putExtra(Intent.EXTRA_TITLE, zip.getName());
         try { a.startActivityForResult(i, REQ_SAVE, onThisDisplay(a)); }
-        catch (ActivityNotFoundException e) { Toast.makeText(a, "This phone has no file picker to save with.", Toast.LENGTH_LONG).show(); }
+        catch (ActivityNotFoundException e) { Toast.makeText(a, tr("This phone has no file picker to save with."), Toast.LENGTH_LONG).show(); }
     }
 
     /** The file picker's answer (LibrarySettings.result asks here first); true when it was Save to a folder's */
@@ -141,15 +143,15 @@ public final class BuildLogUi {
         Context app = a.getApplicationContext();
         new Thread(() -> {
             String msg;
-            if (!zip.isFile()) msg = "The build log is no longer there (it is kept for a day). Open Share build log again.";
+            if (!zip.isFile()) msg = tr("The build log is no longer there (it is kept for a day). Open Share build log again.");
             else try (InputStream in = new FileInputStream(zip); OutputStream out = app.getContentResolver().openOutputStream(to, "w")) {
                 if (out == null) throw new IOException("the folder took no file");
                 byte[] b = new byte[64 << 10];
                 for (int n; (n = in.read(b)) > 0; ) out.write(b, 0, n);
-                msg = "Saved " + zip.getName() + ".";
+                msg = text(tr("Saved %s."), zip.getName());
             } catch (IOException | RuntimeException e) {
                 Log.w(TAG, "save build log: " + e);
-                msg = "The build log was not saved: " + sentence(e.getMessage());
+                msg = text(tr("The build log was not saved: %s"), sentence(e.getMessage()));
             }
             String fm = msg;
             MAIN.post(() -> Toast.makeText(app, fm, Toast.LENGTH_LONG).show());
@@ -173,12 +175,12 @@ public final class BuildLogUi {
         box.setOrientation(LinearLayout.VERTICAL);
         AlertDialog[] d = new AlertDialog[1];
         if (run != null) {
-            String rn = run.getName().startsWith("selftest") ? "Graphics self-test" : BuildLogShare.gameName(a, run.getName().length() > 16 ? run.getName().substring(0, 16) : "");
-            box.addView(new PUi.Setting(a, "🎮", "Newest game run", v -> { d[0].dismiss(); runLog.run(); }).value(rn + ", " + when(run.lastModified())).chevron(a).view);
+            String rn = run.getName().startsWith("selftest") ? tr("Graphics self-test") : BuildLogShare.gameName(a, run.getName().length() > 16 ? run.getName().substring(0, 16) : "");
+            box.addView(new PUi.Setting(a, "🎮", tr("Newest game run"), v -> { d[0].dismiss(); runLog.run(); }).value(rn + ", " + when(run.lastModified())).chevron(a).view);
         }
-        box.addView(new PUi.Setting(a, "🧾", "Newest build", v -> { d[0].dismiss(); share(a, t, bname); })
-                .value(bname + ", " + state((String) nb[2], (String) nb[3], t) + ", " + when((Long) nb[1])).chevron(a).view);
-        d[0] = PUi.sheet(a, "Share log", box).setNegativeButton("Cancel", null).show();
+        box.addView(new PUi.Setting(a, "🧾", tr("Newest build"), v -> { d[0].dismiss(); share(a, t, bname); })
+                .value(bname + ", " + tr(state((String) nb[2], (String) nb[3], t)) + ", " + when((Long) nb[1])).chevron(a).view);
+        d[0] = PUi.sheet(a, tr("Share log"), box).setNegativeButton(tr("Cancel"), null).show();
     }
 
     /** The newest run log (MainActivity's Share log: &lt;app files&gt;/logs/*.log), null when there is none */
@@ -209,7 +211,7 @@ public final class BuildLogUi {
      * null without one; the button reads it again every second while it is attached (the card itself is upstream's and draws on its own tick)
      */
     public static void card(Activity a, LinearLayout card, Supplier<String[]> job) {
-        Button b = PUi.button(a, "Share build log", PUi.Kind.QUIET, v -> {
+        Button b = PUi.button(a, tr("Share build log"), PUi.Kind.QUIET, v -> {
             String[] j = job.get();
             if (j != null) share(a, j[0], j[1]);
         });

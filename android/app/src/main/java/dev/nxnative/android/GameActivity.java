@@ -1,5 +1,7 @@
 package dev.nxnative.android;
 
+import static dev.peanuts.i18n.L10n.tr;   // PEANUTS: display-only Simplified Chinese
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -175,7 +177,7 @@ public final class GameActivity extends Activity implements SurfaceHolder.Callba
         // Paused (pause(): the in-game panel's Pause, or the screen coming back with pause-on-return on): the game is suspended until a tap, or A / Start on a gamepad.
         // Under the panel and its handle, so Stop stays reachable
         pausedView = new TextView(this);
-        pausedView.setText("Paused\n\nTap to continue  (A or Start on a gamepad)");
+        pausedView.setText(tr("Paused\n\nTap to continue  (A or Start on a gamepad)"));   // PEANUTS: translate display text
         pausedView.setTextColor(Color.WHITE);
         pausedView.setTextSize(22);
         pausedView.setGravity(Gravity.CENTER);
@@ -654,7 +656,7 @@ public final class GameActivity extends Activity implements SurfaceHolder.Callba
         String[] denv = Readiness.gameEnv(genv, PROTECTED);
         readinessEnv = denv.length;
         probedChoice = probedChoice(denv, id);
-        overlay.setText(getIntent().getStringExtra("name") + ": checking this phone's GPU…");
+        overlay.setText(getIntent().getStringExtra("name") + tr(": checking this phone's GPU…"));   // PEANUTS: translate display text
         final boolean[] answered = {false};
         Runnable decide = () -> {   // on the UI thread, once: with the facts, or without them after READINESS_WAIT_MS
             if (answered[0] || isFinishing()) return;
@@ -744,7 +746,7 @@ public final class GameActivity extends Activity implements SurfaceHolder.Callba
     private void readinessDialog(String title, String msg, String details, String report, String go, boolean required) {
         String id = titleId();
         android.widget.CheckBox again = required ? null : new android.widget.CheckBox(this);
-        AlertDialog.Builder b = new AlertDialog.Builder(this).setTitle(title).setCancelable(false).setNeutralButton("Details", null);
+        AlertDialog.Builder b = new AlertDialog.Builder(this).setTitle(title).setCancelable(false).setNeutralButton(tr("Details"), null);   // PEANUTS: translate display text
         if (again == null) b.setMessage(msg);
         else {
             int p = Math.round(20 * getResources().getDisplayMetrics().density);
@@ -752,10 +754,10 @@ public final class GameActivity extends Activity implements SurfaceHolder.Callba
             box.setOrientation(android.widget.LinearLayout.VERTICAL);
             box.setPadding(p, p / 2, p, 0);
             TextView t = new TextView(this);
-            t.setText(msg + "\n\nDetails are also in Settings › Readiness check.");
+            t.setText(msg + tr("\n\nDetails are also in Settings › Readiness check."));   // PEANUTS: translate display text
             t.setTextSize(15);
             box.addView(t);
-            again.setText("Don't show this again");
+            again.setText(tr("Don't show this again"));   // PEANUTS: translate display text
             box.addView(again);
             android.widget.ScrollView sv = new android.widget.ScrollView(this);   // a short screen with several warnings still reaches the box
             sv.addView(box);
@@ -771,7 +773,7 @@ public final class GameActivity extends Activity implements SurfaceHolder.Callba
         AlertDialog d = b.create();
         // Details opens over the notice and keeps it open; Copy report there keeps Details open
         d.setOnShowListener(x -> d.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v -> {
-            AlertDialog dd = new AlertDialog.Builder(this).setTitle("Readiness check").setMessage(details).setPositiveButton("Close", null).setNeutralButton("Copy report", null).create();
+            AlertDialog dd = new AlertDialog.Builder(this).setTitle(tr("Readiness check")).setMessage(details).setPositiveButton(tr("Close"), null).setNeutralButton(tr("Copy report"), null).create();   // PEANUTS: translate display text
             dd.setOnShowListener(y -> dd.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(u -> ReadinessActivity.copy(this, report)));
             dd.show();
         }));
@@ -982,7 +984,7 @@ public final class GameActivity extends Activity implements SurfaceHolder.Callba
             input = Native.hasInput();
             started = true;
             hostSetup();
-            overlay.setText(name + ": starting. Log: " + log);
+            overlay.setText(name + tr(": starting. Log: ") + log);   // PEANUTS: translate display text
             ui.postDelayed(this::tail, 500);
             ui.postDelayed(this::fpsTick, 500);
         } catch (IOException | RuntimeException e) {
@@ -1092,8 +1094,8 @@ public final class GameActivity extends Activity implements SurfaceHolder.Callba
      */
     private void fail(String why) {
         if (dev.peanuts.build.ShaderCapture.active(this)) { dev.peanuts.build.ShaderCapture.failure(this, why); end(); return; }   // PEANUTS: Build owns preparation errors
-        new AlertDialog.Builder(this).setTitle("Cannot start " + getIntent().getStringExtra("name")).setMessage(why)
-                .setPositiveButton("OK", (d, w) -> end()).setCancelable(false).show();
+        new AlertDialog.Builder(this).setTitle(String.format(tr("Cannot start %s"), getIntent().getStringExtra("name"))).setMessage(why)   // PEANUTS: translate display text
+                .setPositiveButton(tr("OK"), (d, w) -> end()).setCancelable(false).show();   // PEANUTS: translate display text
     }
 
     private void end() {
@@ -1134,9 +1136,9 @@ public final class GameActivity extends Activity implements SurfaceHolder.Callba
         super.onNewIntent(i);
         String want = i.getStringExtra("title_id"), have = getIntent().getStringExtra("title_id");
         if (want == null || want.equals(have)) return;
-        new AlertDialog.Builder(this).setTitle(getIntent().getStringExtra("name") + " is running")
-                .setMessage("Stop it first (the in-game panel › Stop the game), then start " + i.getStringExtra("name") + ". One game runs at a time.")
-                .setPositiveButton("OK", null).show();
+        new AlertDialog.Builder(this).setTitle(String.format(tr("%s is running"), getIntent().getStringExtra("name")))   // PEANUTS: translate display text
+                .setMessage(String.format(tr("Stop it first (the in-game panel › Stop the game), then start %s. One game runs at a time."), i.getStringExtra("name")))   // PEANUTS: translate display text
+                .setPositiveButton(tr("OK"), null).show();   // PEANUTS: translate display text
     }
 
     // ---- The save's lock (SaveStore.Lock on <save>.lock): taken before the save is recovered and kept while this process lives, so a backup or restore of this save
@@ -1308,10 +1310,10 @@ public final class GameActivity extends Activity implements SurfaceHolder.Callba
         if (Prefs.panelHinted(this)) return;
         Prefs.panelHinted(this, true);
         int how = Prefs.panelPad(this);
-        String pad = how == PadPanel.OPEN_OFF ? "" : how == PadPanel.OPEN_HOME ? "\nController: press Home" : how == PadPanel.OPEN_MINUS_PLUS ? "\nController: hold − and +"
-                : "\nController: press Home, or hold − and +";
+        String pad = how == PadPanel.OPEN_OFF ? "" : how == PadPanel.OPEN_HOME ? tr("\nController: press Home") : how == PadPanel.OPEN_MINUS_PLUS ? tr("\nController: hold − and +")   // PEANUTS: translate display text
+                : tr("\nController: press Home, or hold − and +");   // PEANUTS: translate display text
         TextView h = new TextView(this);
-        h.setText("Menu: swipe in from the right edge, or press Back" + pad);
+        h.setText(tr("Menu: swipe in from the right edge, or press Back") + pad);   // PEANUTS: translate display text
         h.setTextColor(Color.WHITE);
         h.setTextSize(14);
         float dp = getResources().getDisplayMetrics().density;

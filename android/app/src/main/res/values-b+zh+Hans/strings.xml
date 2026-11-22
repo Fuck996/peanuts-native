@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- PEANUTS: zh-CN display resources only. -->
+    <string name="not_supported_yet">暂不支持</string>
+    <string name="render_res_title">分辨率</string>
+    <string name="render_upscale_title">超分画质</string>
+    <string name="render_gfx_title">图形质量</string>
+    <string name="render_res_height">%1$dp</string>
+    <string name="render_res_original">%1$dp（底座模式原始分辨率）</string>
+    <string name="render_heavy">%1$s（负载较高）</string>
+    <string-array name="render_upscale">
+        <item>原始分辨率</item>
+        <item>画质优先</item>
+        <item>均衡</item>
+        <item>性能优先</item>
+        <item>极致性能</item>
+    </string-array>
+    <string-array name="render_gfx">
+        <item>画质优先</item>
+        <item>性能优先</item>
+    </string-array>
+    <string name="render_restart_note">重新启动游戏后生效。</string>
+    <string name="cheats_title">金手指</string>
+    <string name="cheats_caution">保存游戏时，金手指修改过的数值也会写入存档。</string>
+    <string name="cheats_on">在游戏内面板的「常规」标签页查看列表。保存游戏时，修改过的数值也会写入存档。</string>
+    <string name="cheats_off">不使用金手指</string>
+    <string name="cheats_files_title">金手指文件</string>
+    <string name="cheats_files_note">游戏自带的文件，以及为这个游戏版本导入的 Atmosphère 格式文件</string>
+    <string name="cheats_shipped">%1$s（随应用提供）</string>
+    <string name="cheats_shipped_missing">游戏自带的文件：请重新准备游戏，将其添加到游戏包</string>
+    <string name="cheats_import_file">导入金手指文件…</string>
+    <string name="cheats_export">导出金手指…</string>
+    <string name="cheats_import_zip">导入金手指…</string>
+    <string name="cheats_remove">移除</string>
+    <string name="cheats_imported">已导入 %1$s。重启游戏后可在游戏内面板查看。</string>
+    <string name="cheats_refused">未导入：%1$s</string>
+    <string name="cheats_zip_done">已导入 %1$d 个金手指文件和启用设置。</string>
+    <string name="cheats_exported">已导出金手指。</string>
+</resources>

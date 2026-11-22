@@ -1,5 +1,7 @@
 package dev.peanuts.ui;
 
+import static dev.peanuts.i18n.L10n.tr;
+
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.Presentation;
@@ -71,7 +73,7 @@ public final class ScreensOff {
         root.setBackgroundColor(Color.BLACK);
         if (hint) {   // said once, then gone: nothing stays lit
             TextView t = new TextView(d.getContext());
-            t.setText("The build goes on. Tap a screen to bring it back.");
+            t.setText(tr("The build goes on. Tap a screen to bring it back."));
             t.setTextColor(0xFF8A8A8A);
             t.setTextSize(16);
             t.setGravity(Gravity.CENTER);

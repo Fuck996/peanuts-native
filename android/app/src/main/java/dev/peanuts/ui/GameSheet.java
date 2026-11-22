@@ -1,5 +1,7 @@
 package dev.peanuts.ui;
 
+import static dev.peanuts.i18n.L10n.tr;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.graphics.Bitmap;
@@ -94,7 +96,7 @@ public final class GameSheet {
         box = new LinearLayout(a);
         box.setOrientation(LinearLayout.VERTICAL);
         render();
-        dialog = PUi.sheet(a, title.name, box).setNegativeButton("Close", null).create();
+        dialog = PUi.sheet(a, title.name, box).setNegativeButton(tr("Close"), null).create();
         dialog.setOnDismissListener(d -> { if (current == this) current = null; dev.peanuts.ctl.Ctl.screen(); });
         Motion.sheet(dialog);
         Haptics.quiet(200);   // the focus that lands inside the sheet is silent: the press that opened it was the feedback
@@ -110,8 +112,8 @@ public final class GameSheet {
         String installed = companion == null ? null : CompanionPort.installedVersion(title.companionRoot(), companion.packageName);
         return companion == null ? "No companion in the catalog for this game"
                 : installed == null ? PUi.joined(companion.packageName + " " + companion.version, size(companion.size), installCompanion ? "Install after the build" : "Not installed after the build")
-                : installed.equals(companion.version) ? PUi.joined("installed " + installed, "up to date")
-                : PUi.joined("installed " + installed, companion.version + " " + (installCompanion ? "after the build" : "available"));
+                : installed.equals(companion.version) ? PUi.joined(tr("installed ") + installed, "up to date")
+                : PUi.joined(tr("installed ") + installed, companion.version + " " + (installCompanion ? "after the build" : "available"));
     }
 
     private void render() {
@@ -148,7 +150,7 @@ public final class GameSheet {
         boolean updateGone = chosenUpdate != null && !chosenUpdate.file.exists();
         CharSequence up = updateGone ? chosenUpdate.file.getName() + " — this file is no longer where the app found it. Pick it again."
                 : chosenUpdate == null ? PUi.joined(title.updates.isEmpty() ? "None found" : "None", "Choose…")
-                : PUi.joined(chosenUpdate.file.getName(), versionText(chosenUpdate.version) + (chosenUpdate == newest ? ", the newest found" : ""), "Choose another…");
+                : PUi.joined(chosenUpdate.file.getName(), versionText(chosenUpdate.version) + (chosenUpdate == newest ? tr(", the newest found") : ""), "Choose another…");
         PUi.add(box, new PUi.Setting(a, "⬆️", "Update", v -> { if (!building) { Haptics.play(v, Haptics.Word.TICK); LibrarySettings.pickFile(a, REQ_UPDATE, "Pick the update (.nsp, .nsz, .xci or .xcz)"); } }).value(up).chevron(a).view, 0);
         // Version (P1): the version the player has vs. what this build's profile supports, read before Build rather than discovered deep into a run
         boolean fileGone = baseGone || updateGone;
@@ -157,7 +159,7 @@ public final class GameSheet {
         List<String> names = new ArrayList<>();
         for (LibraryScanner.Source d : title.dlcs) names.add(d.name.isEmpty() ? d.file.getName() : d.name);
         for (File f : extraDlc) { boolean known = false; for (LibraryScanner.Source d : title.dlcs) if (d.file.equals(f)) known = true; if (!known) names.add(f.getName()); }
-        CharSequence dl = PUi.joined(names.isEmpty() ? "None found" : names.size() + " found: " + String.join(", ", names), "Add…");
+        CharSequence dl = PUi.joined(names.isEmpty() ? "None found" : String.format(tr("%d found: %s"), names.size(), String.join(", ", names)), "Add…");
         PUi.add(box, new PUi.Setting(a, "➕", "DLC", v -> { if (!building) { Haptics.play(v, Haptics.Word.TICK); LibrarySettings.pickFile(a, REQ_DLC, "Pick a DLC (.nsp or .nsz)"); } }).value(dl).chevron(a).view, 0);
         if (!extraDlc.isEmpty()) PUi.add(box, PUi.button(a, "Forget the DLC you added", PUi.Kind.QUIET, v -> { Haptics.play(v, Haptics.Word.CLICK); extraDlc.clear(); saveDlc(); render(); }), 0, PUi.wrap());
         // Companion
@@ -274,13 +276,13 @@ public final class GameSheet {
     static void importAgain(Activity a, Library lib, LibraryScanner.Title t, CompanionPort.Item companion, Runnable started) {
         View anchor = a.getWindow().getDecorView();
         if (t == null || t.base == null || !t.base.isNup()) return;
-        if (lib.building(t.titleId)) { Haptics.play(anchor, Haptics.Word.REJECT); Toast.makeText(a, "Building now: the progress is on the game's card.", Toast.LENGTH_LONG).show(); return; }
+        if (lib.building(t.titleId)) { Haptics.play(anchor, Haptics.Word.REJECT); Toast.makeText(a, tr("Building now: the progress is on the game's card."), Toast.LENGTH_LONG).show(); return; }
         Reimport.Plan p = plan(a, t);
-        if (p.missing != null) { Haptics.play(anchor, Haptics.Word.REJECT); new AlertDialog.Builder(a).setTitle("Import again").setMessage(p.missing).setPositiveButton("OK", null).show(); return; }
+        if (p.missing != null) { Haptics.play(anchor, Haptics.Word.REJECT); new AlertDialog.Builder(a).setTitle(tr("Import again")).setMessage(p.missing).setPositiveButton(tr("OK"), null).show(); return; }
         if (p.lowSpace()) {
             Haptics.play(anchor, Haptics.Word.REJECT);
-            AlertDialog.Builder b = new AlertDialog.Builder(a).setTitle("Not enough free space").setMessage(Reimport.lowSpace(p)).setNegativeButton("Close", null);
-            if (p.fitsWithoutOld()) b.setNeutralButton("Delete the old file first…", (d, w) -> PUi.confirmDanger(a, "Delete the old .nup first?", Reimport.deleteFirst(p, t.name),
+            AlertDialog.Builder b = new AlertDialog.Builder(a).setTitle(tr("Not enough free space")).setMessage(Reimport.lowSpace(p)).setNegativeButton(tr("Close"), null);
+            if (p.fitsWithoutOld()) b.setNeutralButton(tr("Delete the old file first…"), (d, w) -> PUi.confirmDanger(a, "Delete the old .nup first?", Reimport.deleteFirst(p, t.name),
                     "Delete and import", () -> startImport(a, lib, t, companion, p, true, started)));
             b.show();
             return;
@@ -303,7 +305,7 @@ public final class GameSheet {
     private static void startImport(Activity a, Library lib, LibraryScanner.Title t, CompanionPort.Item companion, Reimport.Plan p, boolean deleteOldFirst, Runnable started) {
         View anchor = a.getWindow().getDecorView();
         String why = reimport(a, lib, t, companion, p, deleteOldFirst);
-        if (why != null) { Haptics.play(anchor, Haptics.Word.REJECT); new AlertDialog.Builder(a).setTitle("Import again").setMessage(why).setPositiveButton("OK", null).show(); return; }
+        if (why != null) { Haptics.play(anchor, Haptics.Word.REJECT); new AlertDialog.Builder(a).setTitle(tr("Import again")).setMessage(why).setPositiveButton(tr("OK"), null).show(); return; }
         if (lib.building(t.titleId)) { Haptics.play(anchor, Haptics.Word.HEAVY); if (started != null) started.run(); }   // accepted (a refusal by the pipeline says so in its own dialog)
     }
 
@@ -334,8 +336,8 @@ public final class GameSheet {
         String supports = supportedShortText();
         LinearLayout col = new LinearLayout(a);
         col.setOrientation(LinearLayout.VERTICAL);
-        col.addView(PUi.small(a, "You have: " + haveText));
-        col.addView(PUi.small(a, "This build supports: " + supports));
+        col.addView(PUi.small(a, tr("You have: ") + haveText));
+        col.addView(PUi.small(a, tr("This build supports: ") + supports));
         int tint;
         String note;
         switch (vs) {
@@ -479,13 +481,13 @@ public final class GameSheet {
         if (lib.building(title.titleId)) return;
         List<String> dirs = PeanutsPrefs.buildDirs(a);
         CharSequence[] labels = new CharSequence[dirs.size() + 1];
-        labels[0] = dirs.isEmpty() ? "Default location" : PUi.joined("Default", dirs.get(0));
+        labels[0] = dirs.isEmpty() ? tr("Default location") : PUi.joined(tr("Default"), dirs.get(0));
         for (int i = 0; i < dirs.size(); i++) labels[i + 1] = dirs.get(i);
         String chosen = PeanutsPrefs.chosenBuildDir(a, title.titleId);
-        new AlertDialog.Builder(a).setTitle("Build destination").setSingleChoiceItems(labels, dirs.indexOf(chosen) + 1, (d, w) -> {
+        new AlertDialog.Builder(a).setTitle(tr("Build destination")).setSingleChoiceItems(labels, dirs.indexOf(chosen) + 1, (d, w) -> {
             d.dismiss();
             chooseBuildFolder(w == 0 ? null : dirs.get(w - 1));
-        }).setPositiveButton("Add folder…", (d, w) -> LibrarySettings.addBuildFolder(a)).setNegativeButton("Cancel", null).show();
+        }).setPositiveButton(tr("Add folder…"), (d, w) -> LibrarySettings.addBuildFolder(a)).setNegativeButton(tr("Cancel"), null).show();
     }
 
     void chooseBuildFolder(String path) {
@@ -509,10 +511,10 @@ public final class GameSheet {
     private void doStartBuild(boolean anyway) {
         State s = state();
         s.buildAnyway = anyway;
-        if (s.base == null) { Haptics.play(box, Haptics.Word.REJECT); Toast.makeText(a, "No base game found", Toast.LENGTH_SHORT).show(); return; }
-        if (s.home == null) { Haptics.play(box, Haptics.Word.REJECT); Toast.makeText(a, "Set the game folder first (Settings › Library)", Toast.LENGTH_LONG).show(); return; }
+        if (s.base == null) { Haptics.play(box, Haptics.Word.REJECT); Toast.makeText(a, tr("No base game found"), Toast.LENGTH_SHORT).show(); return; }
+        if (s.home == null) { Haptics.play(box, Haptics.Word.REJECT); Toast.makeText(a, tr("Set the game folder first (Settings › Library)"), Toast.LENGTH_LONG).show(); return; }
         String why = lib.startBuild(s);
-        if (why != null) { Haptics.play(box, Haptics.Word.REJECT); new AlertDialog.Builder(a).setTitle("Build").setMessage(why).setPositiveButton("OK", null).show(); return; }
+        if (why != null) { Haptics.play(box, Haptics.Word.REJECT); new AlertDialog.Builder(a).setTitle(tr("Build")).setMessage(why).setPositiveButton(tr("OK"), null).show(); return; }
         if (lib.building(title.titleId)) Haptics.play(box, Haptics.Word.HEAVY);   // the build was accepted (a refusal by the pipeline says so in its own dialog)
         dialog.dismiss();
     }

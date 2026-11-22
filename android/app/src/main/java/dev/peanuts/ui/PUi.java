@@ -1,5 +1,7 @@
 package dev.peanuts.ui;
 
+import dev.peanuts.i18n.L10n;
+
 import dev.nxnative.android.R;
 
 import android.app.Activity;
@@ -79,7 +81,7 @@ public final class PUi {
 
     public static TextView text(Context c, CharSequence s, float sp, int colorRes, int weight) {
         TextView t = new TextView(c);
-        t.setText(s);
+        t.setText(L10n.tr(s));
         t.setTextSize(sp);
         t.setTextColor(col(c, colorRes));
         t.setTypeface(face(weight));
@@ -161,8 +163,8 @@ public final class PUi {
     }
 
     public static void status(TextView t, CharSequence s, int colorRes) {
-        t.setText(TextUtils.concat("●  ", s));   // keeps spans (PUi.joined)
-        t.setContentDescription(s);   // the dot is decoration: a screen reader says the state only
+        t.setText(TextUtils.concat("●  ", L10n.tr(s)));   // keeps spans (PUi.joined)
+        t.setContentDescription(L10n.tr(s));   // the dot is decoration: a screen reader says the state only
         t.setAccessibilityLiveRegion(View.ACCESSIBILITY_LIVE_REGION_POLITE);   // the state changes while the screen shows (Checking… → Ready): said when it does
         t.setTextColor(col(t.getContext(), colorRes));
     }
@@ -189,7 +191,7 @@ public final class PUi {
             copy = button(c, "Copy details", Kind.QUIET, v -> {
                 android.content.ClipboardManager cm = c.getSystemService(android.content.ClipboardManager.class);
                 if (cm != null) cm.setPrimaryClip(android.content.ClipData.newPlainText("Peanuts Native details", text.getText()));   // PEANUTS: rebrand
-                android.widget.Toast.makeText(c, "Details copied", android.widget.Toast.LENGTH_SHORT).show();
+                android.widget.Toast.makeText(c, L10n.tr("Details copied"), android.widget.Toast.LENGTH_SHORT).show();
             });
             copy.setPadding(dp(c, 4), 0, dp(c, 4), 0);
             copy.setVisibility(GONE);
@@ -202,8 +204,8 @@ public final class PUi {
         public void open(boolean on) {
             text.setVisibility(on ? VISIBLE : GONE);
             copy.setVisibility(on ? VISIBLE : GONE);
-            toggle.setText(on ? "Hide details" : "Details");
-            toggle.setContentDescription(on ? "Hide details" : "Show details");
+            toggle.setText(L10n.tr(on ? "Hide details" : "Details"));
+            toggle.setContentDescription(L10n.tr(on ? "Hide details" : "Show details"));
         }
 
         /** The details to show (the view hides when there are none); an open view stays open */
@@ -230,13 +232,13 @@ public final class PUi {
 
     /** A small warning chip ("! Pack from other tools") whose tap shows the whole sentence in a small dialog */
     public static TextView warnChip(Activity a, CharSequence s, CharSequence title, CharSequence message) {
-        TextView t = text(a, "!  " + s, 12, R.color.bn_text, 600);
+        TextView t = text(a, "!  " + L10n.tr(s), 12, R.color.bn_text, 600);
         t.setBackground(ripple(a, round(col(a, R.color.bn_warn_tint), dp(a, 999), 0, 0)));
         t.setPadding(dp(a, 10), dp(a, 5), dp(a, 12), dp(a, 5));
         t.setSingleLine(true);
         t.setEllipsize(TextUtils.TruncateAt.END);
-        t.setContentDescription(s + ": tap for details");
-        t.setOnClickListener(v -> new AlertDialog.Builder(a).setTitle(title).setMessage(message).setPositiveButton("OK", null).show());
+        t.setContentDescription(L10n.tr(s) + L10n.tr(": tap for details"));
+        t.setOnClickListener(v -> new AlertDialog.Builder(a).setTitle(L10n.tr(title)).setMessage(L10n.tr(message)).setPositiveButton(L10n.tr("OK"), null).show());
         return t;
     }
 
@@ -423,7 +425,7 @@ public final class PUi {
         Button b = new Button(c) {
             @Override public void setEnabled(boolean on) { super.setEnabled(on); setAlpha(on ? 1f : 0.42f); }
         };
-        b.setText(s);
+        b.setText(L10n.tr(s));
         b.setAllCaps(false);
         b.setTextSize(15);
         b.setTypeface(face(k == Kind.PRIMARY ? 700 : 600));
@@ -471,11 +473,11 @@ public final class PUi {
             lp.leftMargin = dp(c, 10);
             addView(label, lp);
             setIcon(drawable);
-            setContentDescription(s);
+            setContentDescription(L10n.tr(s));
             setOnClickListener(l);
         }
 
-        public void setText(CharSequence s) { label.setText(s); setContentDescription(s); }
+        public void setText(CharSequence s) { label.setText(L10n.tr(s)); setContentDescription(L10n.tr(s)); }
 
         public void setIcon(int drawable) {
             icon.setImageDrawable(drawable == 0 ? null : PUi.icon(getContext(), drawable, textColor(kind)));
@@ -494,7 +496,7 @@ public final class PUi {
         v.setImageDrawable(icon(c, drawable, R.color.bn_text));
         v.setScaleType(ImageView.ScaleType.CENTER);
         style(c, v, k, 14);
-        v.setContentDescription(description);
+        v.setContentDescription(L10n.tr(description));
         v.setClickable(true);
         v.setFocusable(true);
         v.setOnClickListener(l);
@@ -590,7 +592,7 @@ public final class PUi {
             return this;
         }
 
-        public Setting value(CharSequence s) { value.setText(s); value.setVisibility(s == null || s.length() == 0 ? View.GONE : View.VISIBLE); return this; }
+        public Setting value(CharSequence s) { value.setText(L10n.tr(s)); value.setVisibility(s == null || s.length() == 0 ? View.GONE : View.VISIBLE); return this; }
     }
 
     // ---- Dialogs ----
@@ -603,15 +605,15 @@ public final class PUi {
         int p = dp(a, 20);
         content.setPadding(p, dp(a, 4), p, dp(a, 8));
         sv.addView(content);
-        return new AlertDialog.Builder(a).setTitle(title).setView(sv);
+        return new AlertDialog.Builder(a).setTitle(L10n.tr(title)).setView(sv);
     }
 
     /**
      * Asks before something is deleted or forgotten: what goes and what stays, in the message; the yes button in the danger color, Cancel the default.
      */
     public static void confirmDanger(Activity a, String title, CharSequence message, String yes, Runnable r) {
-        AlertDialog d = new AlertDialog.Builder(a).setTitle(title).setMessage(message)
-                .setPositiveButton(yes, (x, w) -> r.run()).setNegativeButton("Cancel", null).create();
+        AlertDialog d = new AlertDialog.Builder(a).setTitle(L10n.tr(title)).setMessage(L10n.tr(message))
+                .setPositiveButton(L10n.tr(yes), (x, w) -> r.run()).setNegativeButton(L10n.tr("Cancel"), null).create();
         d.setOnShowListener(x -> {
             Button b = d.getButton(AlertDialog.BUTTON_POSITIVE);
             if (b != null) b.setTextColor(col(a, R.color.bn_danger));

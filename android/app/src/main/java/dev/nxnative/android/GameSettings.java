@@ -1,5 +1,7 @@
 package dev.nxnative.android;
 
+import static dev.peanuts.i18n.L10n.tr;   // PEANUTS: zh-CN display text.
+
 import android.app.AlertDialog;
 import android.text.InputType;
 import android.view.Gravity;
@@ -128,10 +130,10 @@ final class GameSettings {
             seg[0] = Ui.add(card, new Ui.Segmented(a, new String[] {"Recommended", "Custom"}, 0, k -> {
                 if (k == 1) { custom = true; refresh[0].run(); return; }   // Custom keeps the player's values: nothing to change
                 if (Recommend.changedCount(Prefs.recStates(a, id)) == 0) { custom = false; refresh[0].run(); return; }
-                new PadFocus.Builder(a).setTitle("Use recommended · " + g.name)
-                        .setMessage("The settings you changed for this game that have a recommendation for this phone take it again. Your other settings stay.")
-                        .setPositiveButton("Use recommended", (x, w) -> { Prefs.backToRecommended(a, id); custom = false; again.run(); })
-                        .setNegativeButton("Cancel", (x, w) -> seg[0].select(1)).setOnCancelListener(x -> seg[0].select(1)).show();
+                new PadFocus.Builder(a).setTitle(tr("Use recommended") + " · " + g.name)   // PEANUTS: zh-CN display text.
+                        .setMessage(tr("The settings you changed for this game that have a recommendation for this phone take it again. Your other settings stay."))
+                        .setPositiveButton(tr("Use recommended"), (x, w) -> { Prefs.backToRecommended(a, id); custom = false; again.run(); })
+                        .setNegativeButton(tr("Cancel"), (x, w) -> seg[0].select(1)).setOnCancelListener(x -> seg[0].select(1)).show();
             }), 10);
             TextView values = Ui.add(card, Ui.body(a, recLine), 8);
             values.setTextSize(14);
@@ -143,8 +145,8 @@ final class GameSettings {
                 String l = Recommend.line(now, (s, v) -> Prefs.recCardName(a, id, s, v)), c = Recommend.changedLine(n);
                 if (n > 0) custom = false;   // the changed count decides from here on
                 seg[0].select(n > 0 || custom ? 1 : 0);
-                if (l != null) values.setText(l);
-                changed.setText(c != null ? c + " Recommended puts them back." : custom ? "Your own values stay: change any setting below." : "");
+                if (l != null) values.setText(tr(l));   // PEANUTS: zh-CN display text.
+                changed.setText(c != null ? c + tr(" Recommended puts them back.") : custom ? tr("Your own values stay: change any setting below.") : "");
                 changed.setVisibility(changed.length() == 0 ? View.GONE : View.VISIBLE);
             };
         }
@@ -272,7 +274,7 @@ final class GameSettings {
         if (Prefs.cheatsGame(id)) CheatsUi.rows(a, g, options::add, again);   // a profile with cheat files (game.tsv cheats): the switch, off by default, and the files
         if (LinkPlay.has(id))
             options.add(new Ui.Setting(a, "🔗", "Link Play", v -> LinkPlay.dialog(a, g, again)).value(LinkPlay.label(a, id)).chevron(a));
-        options.add(new Ui.Setting(a, "🌐", "Game language", v -> language(a, g, again)).value(GameLanguage.label(Prefs.gameLang(a, id), phoneTag())).chevron(a));   // not a tester's knob: with the game's options, never folded
+        options.add(new Ui.Setting(a, "🌐", "Game language", v -> language(a, g, again)).value(localizedGameLanguage(Prefs.gameLang(a, id), phoneTag())).chevron(a));   // not a tester's knob: with the game's options, never folded   // PEANUTS: zh-CN display text.
         if (prof != null && prof.timeOfDay)   // the one global setting (Prefs.timeOverride → DM_TIME), here for a game whose day/night cycle follows the user clock
             options.add(new Ui.Setting(a, "🕒", "Time of day", v -> TimeOfDay.dialog(a, again)).value(TimeOfDay.label(a)).chevron(a));
 
@@ -310,9 +312,9 @@ final class GameSettings {
         options.rows.addView(dev.peanuts.settings.ModsSection.view(a, id, g.name, g.gameDir, g.packDir));   // PEANUTS: the Mods section, above Companion (install, on/off, delete; a code mod's build with mods)
         options.rows.addView(dev.peanuts.settings.CompanionSection.view(a, id, dev.peanuts.settings.CompanionSection.root(g.packDir)));   // PEANUTS: the Companion section (install/update/remove, second screen)
         Section[] all = perf ? new Section[] {picture, speed, advanced} : new Section[] {options, controls};   // Performance: what changes speed and picture; Game: the game's own options, language and controls
-        View reset = recLine != null ? null : Ui.button(a, "Reset to defaults", Ui.Kind.SOFT, v -> new PadFocus.Builder(a).setTitle("Reset to defaults · " + g.name)
-                .setMessage("The game will follow global settings. Extra environment lines are kept.")
-                .setPositiveButton("Reset", (x, w) -> { Prefs.resetGame(a, id); again.run(); }).setNegativeButton("Cancel", null).show());
+        View reset = recLine != null ? null : Ui.button(a, "Reset to defaults", Ui.Kind.SOFT, v -> new PadFocus.Builder(a).setTitle(tr("Reset to defaults") + " · " + g.name)   // PEANUTS: zh-CN display text.
+                .setMessage(tr("The game will follow global settings. Extra environment lines are kept."))
+                .setPositiveButton(tr("Reset"), (x, w) -> { Prefs.resetGame(a, id); again.run(); }).setNegativeButton(tr("Cancel"), null).show());
         if (wide) rail(a, content, all, reset, again);
         else column(a, content, all, reset);
         refresh[0].run();   // the tags, the Recommended: lines and the choice's changed line
@@ -386,7 +388,7 @@ final class GameSettings {
             Runnable show = () -> {
                 s.rows.setVisibility(advancedOpen ? View.VISIBLE : View.GONE);
                 sum.setText(advancedOpen ? s.info : s.info + " " + String.join(", ", s.titles) + ".");
-                act.setText(advancedOpen ? "Hide" : "Show " + s.titles.size());
+                act.setText(advancedOpen ? tr("Hide") : tr("Show ") + s.titles.size());   // PEANUTS: zh-CN display text.
                 ch.setRotation(advancedOpen ? -90 : 90);
                 head.setContentDescription(advancedOpen ? "Hide Advanced" : "Show Advanced, " + s.titles.size() + " settings");
             };
@@ -447,7 +449,13 @@ final class GameSettings {
     /** Dynamic resolution's value: Off, or the range the render size moves in (Prefs.DRS_NAMES: the lowest size, as % of the window; always up to 100 %) */
     static String drsValue(int i) { return i <= 0 ? "Off" : "Between " + Prefs.DRS_NAMES[i] + " and 100% of the window"; }
 
-    /** A list's choice without its explanation in brackets, as a row's value ("FSR 1 (sharp, fast)" reads "FSR 1"); the list shows it whole */
+    private static String localizedGameLanguage(String choice, String phone) {
+        if (choice != null) return tr(GameLanguage.name(choice));   // PEANUTS: zh-CN display text.
+        String code = GameLanguage.code(phone);
+        return tr("Phone's language · ") + tr(code != null ? GameLanguage.name(code) : "not a console language, so English (US)");
+    }
+
+    /** A list's choice without its explanation in brackets, as a row's value; the list shows it whole. */
     static String shortName(String s) { int i = s.indexOf(" ("); return i > 0 ? s.substring(0, i) : s; }
 
     /** The GPU driver row's value: System, or the installed driver's name and version */
@@ -493,7 +501,9 @@ final class GameSettings {
     }
     static int indexOfPct(int pct) { for (int i = 0; i < Profile.RENDER_PCTS.length; i++) if (Profile.RENDER_PCTS[i] == pct) return i; return -1; }
     private static void radio(MainActivity a, String title, String[] labels, int checked, java.util.function.IntConsumer picked) {
-        new AlertDialog.Builder(a).setTitle(title).setSingleChoiceItems(labels, checked, (x, w) -> { dev.peanuts.ui.Feel.picked(x); x.dismiss(); picked.accept(w); }).setNegativeButton("Cancel", null).show();   // PEANUTS: Feel.picked, the choice's haptic (a plain AlertDialog: PadFocus.Builder's hook does not see it)
+        String[] display = labels.clone();
+        for (int i = 0; i < display.length; ++i) display[i] = tr(display[i]);
+        new AlertDialog.Builder(a).setTitle(tr(title)).setSingleChoiceItems(display, checked, (x, w) -> { dev.peanuts.ui.Feel.picked(x); x.dismiss(); picked.accept(w); }).setNegativeButton(tr("Cancel"), null).show();   // PEANUTS: Feel.picked, the choice's haptic (a plain AlertDialog: PadFocus.Builder's hook does not see it)
     }
 
     static String windowLabel(MainActivity a, String id) {
@@ -548,7 +558,7 @@ final class GameSettings {
         android.widget.RadioGroup rg = new android.widget.RadioGroup(a);
         for (int k = 0; k < labels.length; k++) {
             android.widget.RadioButton rb = new android.widget.RadioButton(a);
-            rb.setText(labels[k]);
+            rb.setText(tr(labels[k]));   // PEANUTS: zh-CN display text.
             rb.setId(k + 1);
             rg.addView(rb);
         }
@@ -559,7 +569,7 @@ final class GameSettings {
             done.run();
         });
         Ui.add(box, rg, 8);
-        d[0] = Ui.sheet(a, "GPU timing · " + g.name, box).setNegativeButton("Cancel", null).show();
+        d[0] = Ui.sheet(a, tr("GPU timing") + " · " + g.name, box).setNegativeButton(tr("Cancel"), null).show();   // PEANUTS: zh-CN display text.
     }
 
     /** The pack's scene_res rows (Pack.scenes), empty without a pack or from one that cannot be read */
@@ -601,7 +611,7 @@ final class GameSettings {
                 ResPresets.Preset p = ps.get(k);
                 boolean missing = p.overlay() && SceneRes.overlay(rows, pd, p.id) == null;
                 rb.setText(ResPresets.itemText(p, k == 0, p.id.equals(recPreset)) + (missing ? " \u00b7 needs Prepare again" : ""));
-            } else rb.setText("Advanced (for testers)\nwindow and 3D scene set apart");
+            } else rb.setText(tr("Advanced (for testers)\nwindow and 3D scene set apart"));   // PEANUTS: zh-CN display text.
             rb.setId(k + 1);
             rg.addView(rb);
         }
@@ -615,7 +625,7 @@ final class GameSettings {
             done.run();
         });
         Ui.add(box, rg, 8);
-        d[0] = Ui.sheet(a, "Resolution \u00b7 " + g.name, box).setNegativeButton("Cancel", null).show();
+        d[0] = Ui.sheet(a, tr("Resolution") + " · " + g.name, box).setNegativeButton(tr("Cancel"), null).show();   // PEANUTS: zh-CN display text.
     }
 
     /** Game settings' value of Advanced › 3D scene: the choice's label, and when the pack has no overlay for it (made before the option, or the pack step refused the palette), what to do */
@@ -651,7 +661,7 @@ final class GameSettings {
         android.widget.RadioGroup rg = new android.widget.RadioGroup(a);
         for (int k = 0; k < labels.length; k++) {
             android.widget.RadioButton rb = new android.widget.RadioButton(a);
-            rb.setText(labels[k]);
+            rb.setText(tr(labels[k]));   // PEANUTS: zh-CN display text.
             rb.setId(k + 1);
             rg.addView(rb);
         }
@@ -663,7 +673,7 @@ final class GameSettings {
             done.run();
         });
         Ui.add(box, rg, 8);
-        d[0] = Ui.sheet(a, "3D scene · " + g.name, box).setNegativeButton("Cancel", null).show();
+        d[0] = Ui.sheet(a, tr("3D scene") + " · " + g.name, box).setNegativeButton(tr("Cancel"), null).show();   // PEANUTS: zh-CN display text.
     }
 
     static String phoneTag() { return java.util.Locale.getDefault().toLanguageTag(); }
@@ -671,15 +681,15 @@ final class GameSettings {
     /** Game language (DM_LANG, GameLanguage): the phone's language first (the default), then the console's languages; a game without the one picked uses one it has */
     static void language(android.app.Activity a, Game g, Runnable done) {   // the in-game panel's shortcut too
         String[] labels = new String[GameLanguage.CODES.length + 1];
-        labels[0] = GameLanguage.label(null, phoneTag());
-        System.arraycopy(GameLanguage.NAMES, 0, labels, 1, GameLanguage.NAMES.length);
+        labels[0] = localizedGameLanguage(null, phoneTag());
+        for (int i = 0; i < GameLanguage.NAMES.length; ++i) labels[i + 1] = tr(GameLanguage.NAMES[i]);   // PEANUTS: zh-CN display text.
         String m = Prefs.gameLang(a, g.titleId);
         int checked = m == null ? 0 : 1 + Math.max(0, Arrays.asList(GameLanguage.CODES).indexOf(m));
-        new PadFocus.Builder(a).setTitle("Game language · " + g.name).setSingleChoiceItems(labels, checked, (x, w) -> {
+        new PadFocus.Builder(a).setTitle(tr("Game language") + " · " + g.name).setSingleChoiceItems(labels, checked, (x, w) -> {
             Prefs.gameLang(a, g.titleId, w == 0 ? null : GameLanguage.CODES[w - 1]);
             x.dismiss();
             done.run();
-        }).setNegativeButton("Cancel", null).show();
+        }).setNegativeButton(tr("Cancel"), null).show();   // PEANUTS: zh-CN display text.
     }
 
     /** A choice made under Advanced (a game with presets) stores Advanced, so the choices are not taken for a preset they happen to match (ResPresets.current) */
@@ -700,7 +710,7 @@ final class GameSettings {
                 keepAdvanced(a, g);
                 x.dismiss();
                 done.run();
-            }).setNegativeButton("Cancel", null).show();
+            }).setNegativeButton(tr("Cancel"), null).show();   // PEANUTS: zh-CN display text.
             return;
         }
         String[] labels = new String[Prefs.WINDOWS.length + 1];
@@ -712,7 +722,7 @@ final class GameSettings {
             keepAdvanced(a, g);
             x.dismiss();
             done.run();
-        }).setNegativeButton("Cancel", null).show();
+        }).setNegativeButton(tr("Cancel"), null).show();   // PEANUTS: zh-CN display text.
     }
 
     /** Display: Fit keeps the game's 16:9 picture with bars on a screen of another shape; Stretch fills the screen (DM_VK_STRETCH), the touch mapping with it */
@@ -728,13 +738,13 @@ final class GameSettings {
         boolean fill = fillable(Profile.of(g.titleId));   // PEANUTS: a third choice for a game that can fill
         boolean guess = fill && Profile.of(g.titleId).aspectUntested;   // PEANUTS: rows nobody has seen on a device (game.tsv aspect_plan_untested)
         String[] names = fill ? new String[] {Prefs.DISPLAY_NAMES[0], Prefs.DISPLAY_NAMES[1], FILL_NAME + (guess ? ". Untested on this game: it may look wrong or not start; pick Fit to go back" : "")} : Prefs.DISPLAY_NAMES;   // PEANUTS
-        new PadFocus.Builder(a).setTitle("Display · " + g.name).setSingleChoiceItems(names, filling(a, g.titleId) ? 2 : Prefs.stretch(a, g.titleId) ? 1 : 0, (x, w) -> {   // PEANUTS: names, Fill
+        new PadFocus.Builder(a).setTitle(tr("Display") + " · " + g.name).setSingleChoiceItems(names, filling(a, g.titleId) ? 2 : Prefs.stretch(a, g.titleId) ? 1 : 0, (x, w) -> {   // PEANUTS: names, Fill
             Prefs.stretch(a, g.titleId, w == 1);
             if (w == 2) Prefs.aspect(a, g.titleId, ScreenShape.CHOICE);   // PEANUTS: Fill
             else if (filling(a, g.titleId)) Prefs.aspect(a, g.titleId, null);   // PEANUTS: Fit or Stretch after Fill: the game as shipped again
             x.dismiss();
             done.run();
-        }).setNegativeButton("Cancel", null).show();
+        }).setNegativeButton(tr("Cancel"), null).show();   // PEANUTS: zh-CN display text.
     }
 
     private static void xbox(MainActivity a, Game g, Runnable done) {   // Default first: the game follows Settings again
@@ -746,7 +756,7 @@ final class GameSettings {
             Prefs.xboxButtons(a, g.titleId, w == 0 ? null : w - 1);
             x.dismiss();
             done.run();
-        }).setNegativeButton("Cancel", null).show();
+        }).setNegativeButton(tr("Cancel"), null).show();   // PEANUTS: zh-CN display text.
     }
 
     private static android.widget.ListAdapter capItems(MainActivity a, String[] labels, boolean[] enabled) {
@@ -774,11 +784,11 @@ final class GameSettings {
             else labels[0] = "Default (Settings: " + Prefs.paceLabel(Prefs.paceOf(Prefs.fpsCap(a))) + ")";
             int checked = 0, cur = Prefs.paceCap(a, g.titleId);
             for (int k = 0; k < choices.length; k++) { enabled[k + 1] = FrameRateCaps.contains(allowed, choices[k]); labels[k + 1] = Prefs.paceLabel(choices[k]) + (enabled[k + 1] ? "" : " · unavailable for this game"); if (Prefs.ownFpsCap(a, g.titleId) && choices[k] == cur) checked = k + 1; }
-            new PadFocus.Builder(a).setTitle("Frame rate cap · " + g.name).setSingleChoiceItems(capItems(a, labels, enabled), checked, (x, w) -> {
+            new PadFocus.Builder(a).setTitle(tr("Frame rate cap") + " · " + g.name).setSingleChoiceItems(capItems(a, labels, enabled), checked, (x, w) -> {   // PEANUTS: zh-CN display text.
                 if (!enabled[w]) return;
                 Prefs.fpsCap(a, g.titleId, w == 0 ? null : choices[w - 1]);
                 x.dismiss(); done.run();
-            }).setNegativeButton("Cancel", null).show();
+            }).setNegativeButton(tr("Cancel"), null).show();   // PEANUTS: zh-CN display text.
             return;
         }
         int[] choices = {0, 120, 90, 60, 45, 40, 30, 20, 15};
@@ -798,12 +808,12 @@ final class GameSettings {
             if (!enabled[k + 2]) labels[k + 2] += " · unavailable for this game";
             if (own && choices[k] == cur) checked = k + 2;
         }
-        new PadFocus.Builder(a).setTitle("Frame rate cap · " + g.name).setSingleChoiceItems(capItems(a, labels, enabled), checked, (x, w) -> {
+        new PadFocus.Builder(a).setTitle(tr("Frame rate cap") + " · " + g.name).setSingleChoiceItems(capItems(a, labels, enabled), checked, (x, w) -> {   // PEANUTS: zh-CN display text.
             if (!enabled[w]) return;
             Prefs.fpsCap(a, g.titleId, w == 0 ? null : w == 1 ? -1 : choices[w - 2]);
             x.dismiss();
             done.run();
-        }).setNegativeButton("Cancel", null).show();
+        }).setNegativeButton(tr("Cancel"), null).show();   // PEANUTS: zh-CN display text.
     }
 
     private static void env(MainActivity a, Game g, Runnable done) {
@@ -818,8 +828,8 @@ final class GameSettings {
         box.setOrientation(LinearLayout.VERTICAL);
         box.addView(Ui.small(a, "KEY=VALUE lines for the host, one a line (# starts a comment). They come after env.txt and win over it, for " + g.name + " only."));
         Ui.add(box, t, 8);
-        Ui.sheet(a, "Extra environment · " + g.name, box).setPositiveButton("Save", (x, w) -> { Prefs.gameEnv(a, g.titleId, t.getText().toString()); done.run(); })
-                .setNeutralButton("Clear", (x, w) -> { Prefs.gameEnv(a, g.titleId, null); done.run(); }).setNegativeButton("Cancel", null).show();
+        Ui.sheet(a, tr("Extra environment") + " · " + g.name, box).setPositiveButton(tr("Save"), (x, w) -> { Prefs.gameEnv(a, g.titleId, t.getText().toString()); done.run(); })   // PEANUTS: zh-CN display text.
+                .setNeutralButton(tr("Clear"), (x, w) -> { Prefs.gameEnv(a, g.titleId, null); done.run(); }).setNegativeButton(tr("Cancel"), null).show();
     }
 
     static String dflt(boolean own, String v) { return v; }   // a row shows the value alone; the list's first choice says Default (Settings: …)
@@ -834,21 +844,21 @@ final class GameSettings {
         labels[0] = first;
         System.arraycopy(items, 0, labels, 1, items.length);
         new PadFocus.Builder(a).setTitle(title).setSingleChoiceItems(labels, own ? cur + 1 : 0, (x, w) -> { set.accept(w == 0 ? null : w - 1); x.dismiss(); done.run(); })
-                .setNegativeButton("Cancel", null).show();
+                .setNegativeButton(tr("Cancel"), null).show();   // PEANUTS: zh-CN display text.
     }
 
     private static void upscaler(MainActivity a, Game g, Runnable done) {   // the Upscaler (GameUpscaler: DM_VK_NDSR and the present's scaling); the in-game panel changes it live
-        choose(a, "Upscaler · " + g.name, GameUpscaler.MODES, firstLabel(recLabel(GameUpscaler.MODES, Recommend.UPSCALERS, Prefs.rec(a, g.titleId, Recommend.UPSCALER)), GameUpscaler.MODES[GameUpscaler.mode(a)]), GameUpscaler.ownMode(a, g.titleId), GameUpscaler.mode(a, g.titleId),
+        choose(a, tr("Upscaler") + " · " + g.name, GameUpscaler.MODES, firstLabel(recLabel(GameUpscaler.MODES, Recommend.UPSCALERS, Prefs.rec(a, g.titleId, Recommend.UPSCALER)), GameUpscaler.MODES[GameUpscaler.mode(a)]), GameUpscaler.ownMode(a, g.titleId), GameUpscaler.mode(a, g.titleId),   // PEANUTS: zh-CN display text.
                v -> GameUpscaler.mode(a, g.titleId, v), done);
     }
 
     private static void sharpness(MainActivity a, Game g, Runnable done) {   // FSR's RCAS sharpening (GameUpscaler, DM_VK_NDSR_SHARP)
-        choose(a, "FSR sharpness · " + g.name, GameUpscaler.SHARP_NAMES, firstLabel(null, GameUpscaler.sharpName(GameUpscaler.sharp(a))), GameUpscaler.ownSharp(a, g.titleId),
+        choose(a, tr("FSR sharpness") + " · " + g.name, GameUpscaler.SHARP_NAMES, firstLabel(null, GameUpscaler.sharpName(GameUpscaler.sharp(a))), GameUpscaler.ownSharp(a, g.titleId),   // PEANUTS: zh-CN display text.
                GameUpscaler.sharpIndex(GameUpscaler.sharp(a, g.titleId)), v -> GameUpscaler.sharp(a, g.titleId, v == null ? null : GameUpscaler.SHARPS[v]), done);
     }
 
     private static void dlssMode(MainActivity a, Game g, Runnable done) {   // the DLSS stand-in's mode (GameUpscaler.dlssMode, DM_VK_DLSS); the in-game panel changes it live
-        choose(a, "Upscaler · " + g.name, DlssTune.MODE_NAMES, firstLabel(recLabel(DlssTune.MODE_NAMES, Recommend.DLSS_MODES, Prefs.rec(a, g.titleId, Recommend.UPSCALER)), DlssTune.MODE_NAMES[DlssTune.MODE_DEFAULT]), GameUpscaler.ownDlssMode(a, g.titleId), GameUpscaler.dlssMode(a, g.titleId),
+        choose(a, tr("Upscaler") + " · " + g.name, DlssTune.MODE_NAMES, firstLabel(recLabel(DlssTune.MODE_NAMES, Recommend.DLSS_MODES, Prefs.rec(a, g.titleId, Recommend.UPSCALER)), DlssTune.MODE_NAMES[DlssTune.MODE_DEFAULT]), GameUpscaler.ownDlssMode(a, g.titleId), GameUpscaler.dlssMode(a, g.titleId),   // PEANUTS: zh-CN display text.
                v -> GameUpscaler.dlssMode(a, g.titleId, v), done);
     }
 
@@ -899,10 +909,10 @@ final class GameSettings {
                     : " (3D view follows it; HUD and menus keep their 16:9 layout)");
         String cur = Prefs.aspect(a, g.titleId);
         int checked = cur == null ? 0 : Math.max(0, as.indexOf(cur) + 1);
-        new PadFocus.Builder(a).setTitle("Aspect ratio · " + g.name).setSingleChoiceItems(labels, checked, (x, w) -> {
+        new PadFocus.Builder(a).setTitle(tr("Aspect ratio") + " · " + g.name).setSingleChoiceItems(labels, checked, (x, w) -> {   // PEANUTS: zh-CN display text.
             Prefs.aspect(a, g.titleId, w == 0 ? null : as.get(w - 1));
             x.dismiss();
             done.run();
-        }).setNegativeButton("Cancel", null).show();
+        }).setNegativeButton(tr("Cancel"), null).show();   // PEANUTS: zh-CN display text.
     }
 }

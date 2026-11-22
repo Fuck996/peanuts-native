@@ -1,5 +1,7 @@
 package dev.peanuts.ui;
 
+import static dev.peanuts.i18n.L10n.tr;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -352,7 +354,7 @@ public final class DriverActivity extends Activity {
             return;
         }
         if (r.error != null) {
-            PUi.add(content, PUi.body(this, "The releases did not load: " + r.error + ". Check the connection and try again."), 16);
+            PUi.add(content, PUi.body(this, tr("The releases did not load: ") + r.error + tr(". Check the connection and try again.")), 16);
             LinearLayout row = PUi.row(this);
             row.addView(PUi.button(this, "Try again", PUi.Kind.TONAL, v -> { READ.remove(repo); render(); }), PUi.wrap());
             PUi.add(content, row, 10);
@@ -388,7 +390,7 @@ public final class DriverActivity extends Activity {
                 boolean open = !openNotes.remove(key);
                 if (open) openNotes.add(key);
                 n.setVisibility(open ? View.VISIBLE : View.GONE);
-                t.setText(open ? "Hide notes" : "Notes");
+                t.setText(tr(open ? "Hide notes" : "Notes"));
             });
         }
         if (r.assets.size() == 1) card.addView(file(r.assets.get(0), r.title, when, phone, from, toggle));
@@ -427,7 +429,7 @@ public final class DriverActivity extends Activity {
         Button b = PUi.button(this, installed ? "Install again" : "Install", other || installed ? PUi.Kind.TONAL : PUi.Kind.PRIMARY, v -> {
             if (!other) { download(a); return; }
             new AlertDialog.Builder(this).setTitle("Install " + a.name + "?").setMessage("It is made for " + gpus + ". This phone's GPU is " + DriverPort.gpu()
-                    + ", so games may not start with it. You can pick System again at any time.").setPositiveButton("Install", (d, w) -> download(a)).setNegativeButton("Cancel", null).show();
+                    + ", so games may not start with it. You can pick System again at any time.").setPositiveButton(tr("Install"), (d, w) -> download(a)).setNegativeButton(tr("Cancel"), null).show();
         });
         b.setEnabled(!installing);
         if (beside != null) top.addView(beside);
@@ -451,7 +453,7 @@ public final class DriverActivity extends Activity {
         if (jobBar == null || job == null) return;
         jobBar.setIndeterminate(job.total <= 0);
         if (job.total > 0) { jobBar.setMax(1000); jobBar.setProgress((int) (job.done * 1000 / job.total)); }
-        jobText.setText(job.done >= job.total && job.total > 0 ? "Installing" : mb(job.done) + " of " + mb(job.total));
+        jobText.setText(job.done >= job.total && job.total > 0 ? tr("Installing") : String.format(java.util.Locale.ROOT, tr("%s of %s"), mb(job.done), mb(job.total)));
     }
 
     /** Downloads a file into the cache with its progress, installs it through upstream and picks it */
@@ -498,8 +500,8 @@ public final class DriverActivity extends Activity {
     }
 
     private String installedMessage(DriverPort.Driver d) {
-        return "Installed and picked " + d.name + (gameTitleId == null ? "." : " for this game.")
-                + " It applies from the next game start.";
+        return tr("Installed and picked ") + d.name + (gameTitleId == null ? "." : " for this game.")
+                + tr(" It applies from the next game start.");
     }
 
     private void load(String repo) {

@@ -1,5 +1,8 @@
 package dev.nxnative.android;
 
+import android.content.DialogInterface;
+import dev.peanuts.i18n.L10n;   // PEANUTS: zh-CN display text.
+
 import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
@@ -70,8 +73,16 @@ final class PadFocus {
         Builder(Context c) { super(c); }
         Builder(Context c, int theme) { super(c, theme); }
 
+        @Override public Builder setTitle(CharSequence text) { super.setTitle(L10n.tr(text)); return this; }
+        @Override public Builder setMessage(CharSequence text) { super.setMessage(L10n.tr(text)); return this; }
+        @Override public Builder setNegativeButton(CharSequence text, DialogInterface.OnClickListener l) { super.setNegativeButton(L10n.tr(text), l); return this; }
+        @Override public Builder setNeutralButton(CharSequence text, DialogInterface.OnClickListener l) { super.setNeutralButton(L10n.tr(text), l); return this; }
+        @Override public Builder setItems(CharSequence[] items, DialogInterface.OnClickListener l) { super.setItems(L10n.items(items), l); return this; }
+        @Override public Builder setSingleChoiceItems(CharSequence[] items, int i, DialogInterface.OnClickListener l) { super.setSingleChoiceItems(L10n.items(items), i, l); return this; }
+        @Override public Builder setMultiChoiceItems(CharSequence[] items, boolean[] chosen, DialogInterface.OnMultiChoiceClickListener l) { super.setMultiChoiceItems(L10n.items(items), chosen, l); return this; }
+
         // PEANUTS begin: a confirm button that does something clicks (dev.peanuts.ui.Feel; an OK without a listener stays as quiet as Cancel)
-        @Override public Builder setPositiveButton(CharSequence text, android.content.DialogInterface.OnClickListener l) { super.setPositiveButton(text, dev.peanuts.ui.Feel.confirm(l)); return this; }
+        @Override public Builder setPositiveButton(CharSequence text, android.content.DialogInterface.OnClickListener l) { super.setPositiveButton(L10n.tr(text), dev.peanuts.ui.Feel.confirm(l)); return this; }
         // PEANUTS end
 
         @Override public AlertDialog create() {

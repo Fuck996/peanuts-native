@@ -1,5 +1,8 @@
 package dev.nxnative.android;
 
+import static dev.peanuts.i18n.L10n.tr;   // PEANUTS: zh-CN display text.
+import static dev.peanuts.i18n.BuildZh.text;
+
 import android.content.Context;
 
 import org.json.JSONArray;
@@ -572,7 +575,7 @@ final class Job {
             if (!eta.isEmpty()) base += " · " + eta;
             return base;
         }
-        return STEP_TEXT[SHADERS] + ": " + shadersCountText();
+        return text(tr("%s: %s"), tr(STEP_TEXT[SHADERS]), shadersCountText());   // PEANUTS: zh-CN display text.
     }
 
     /** The card's line under the bar: "37 % · 21,548 shaders left · about 35 min left · the other 70 are reused" (the parts it knows) */
@@ -589,9 +592,9 @@ final class Job {
         if (i == SHADERS) {
             String stage = step(STEPS[i]).optString("stage");
             if (!note.isEmpty())   // after the translation the step's own name would mislead: "Writing the shader library: 120 of 720 MB"
-                return stage.equals("library") || stage.equals("check") || stage.equals("done") ? PrepareText.capital(note) : PrepareText.withNote(STEP_TEXT[i], note, "");
-            if (stage.equals("library") || stage.equals("done")) return "Writing the shader library";
-            if (stage.equals("check")) return "Checking the shader library";
+                return stage.equals("library") || stage.equals("check") || stage.equals("done") ? PrepareText.capital(note) : PrepareText.withNote(tr(STEP_TEXT[i]), note, "");   // PEANUTS: zh-CN display text.
+            if (stage.equals("library") || stage.equals("done")) return tr("Writing the shader library");
+            if (stage.equals("check")) return tr("Checking the shader library");
             if (keeping()) return PrepareText.keepText(stepDone(i), stepTotal(i));
             return shadersStepText();
         }
@@ -600,29 +603,29 @@ final class Job {
             String part = step(STEPS[i]).optString("stage");
             // the module being rewritten stays on the card while the rewriter's progress lines give its share (pack_android.py's "stage: rewriting main (1 of 3)")
             String what = step(STEPS[i]).optString("note");
-            String base = what.isEmpty() ? STEP_TEXT[i] + " (a few minutes)" : PrepareText.withNote(STEP_TEXT[i], what, "");
+            String base = what.isEmpty() ? text(tr("%s (a few minutes)"), tr(STEP_TEXT[i])) : PrepareText.withNote(tr(STEP_TEXT[i]), what, "");   // PEANUTS: zh-CN display text.
             return part.equals("code") && t > 0 ? base + " (" + Math.min(100, d * 100 / t) + " %)" : base;
         }
-        if (!note.isEmpty()) return PrepareText.withNote(STEP_TEXT[i], note, "");
+        if (!note.isEmpty()) return PrepareText.withNote(tr(STEP_TEXT[i]), note, "");
         long d = stepDone(i), t = stepTotal(i);
         String part = step(STEPS[i]).optString("stage");   // shader_split.py's "progress: <done>/<total> <n>%" inside a large file
         String what = step(STEPS[i]).optString("note");   // the phase the count is of: "Finding the shaders: reading 1,442 files · 203 of 1,442 files"
-        if (!what.isEmpty()) return PrepareText.withNote(STEP_TEXT[i], what, PrepareText.countText(STEPS[i].equals("split"), d, t, part));
-        return PrepareText.stepCountText(STEP_TEXT[i], STEPS[i].equals("split"), d, t, part);   // the split counts files: "Finding the shaders: 1,203 of 1,890 files"
+        if (!what.isEmpty()) return PrepareText.withNote(tr(STEP_TEXT[i]), what, PrepareText.countText(STEPS[i].equals("split"), d, t, part));   // PEANUTS: zh-CN display text.
+        return PrepareText.stepCountText(tr(STEP_TEXT[i]), STEPS[i].equals("split"), d, t, part);   // the split counts files: "Finding the shaders: 1,203 of 1,890 files"
     }
 
     /** One line for the screen and the notification: what the job is doing or why it stopped */
     synchronized String statusText(boolean serviceAlive) {
         String s = state();
-        String step = "step " + (current() + 1) + " of " + STEPS.length;
+        String step = text(tr("step %d of %d"), current() + 1, STEPS.length);   // PEANUTS: zh-CN display text.
         switch (s) {
-            case "done": return "Ready to play.";
+            case "done": return tr("Ready to play.");
             case "failed": return PrepareText.failedText(STEP_TEXT[current()], error(), o.has("fix"));
-            case "pending": return "Not started yet.";
-            case "paused": return "Paused: " + reasonText(reason()) + ". " + stepText() + "." + (reasonDetail().isEmpty() ? "" : "\n" + capital(reasonDetail()) + ".")
-                    + (canGoOn() && serviceAlive ? "\nIf the phone is not hot, tap Go on anyway." : "");
+            case "pending": return tr("Not started yet.");
+            case "paused": return text(tr("Paused: %s. %s."), tr(reasonText(reason())), stepText()) + (reasonDetail().isEmpty() ? "" : "\n" + capital(reasonDetail()) + ".")
+                    + (canGoOn() && serviceAlive ? tr("\nIf the phone is not hot, tap Go on anyway.") : "");
             case "running": return serviceAlive ? stepText() + " (" + step + ")" + quietText() + "."
-                    : "Interrupted at " + stepText() + ". Tap Resume to go on.";
+                    : text(tr("Interrupted at %s. Tap Resume to go on."), stepText());
             default: return s;
         }
     }

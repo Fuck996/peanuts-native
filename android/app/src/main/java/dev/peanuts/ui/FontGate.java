@@ -1,5 +1,7 @@
 package dev.peanuts.ui;
 
+import static dev.peanuts.i18n.L10n.tr;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 
@@ -33,10 +35,10 @@ final class FontGate {
     static void check(Activity a, String titleId, String name, Runnable go) {
         String why = refusal(a, titleId, name);
         if (why == null) { go.run(); return; }
-        new AlertDialog.Builder(a).setTitle("Firmware needed")
+        new AlertDialog.Builder(a).setTitle(tr("Firmware needed"))
                 .setMessage(why)
-                .setPositiveButton("Choose firmware…", (d, w) -> LibrarySettings.pickFirmwareSource(a))
-                .setNeutralButton("Play anyway", (d, w) -> go.run())
-                .setNegativeButton("Cancel", null).show();
+                .setPositiveButton(tr("Choose firmware…"), (d, w) -> LibrarySettings.pickFirmwareSource(a))
+                .setNeutralButton(tr("Play anyway"), (d, w) -> go.run())
+                .setNegativeButton(tr("Cancel"), null).show();
     }
 }

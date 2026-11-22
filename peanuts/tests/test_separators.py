@@ -15,6 +15,10 @@ class Separators(unittest.TestCase):
         for f in sorted(OWN.rglob('*.java')):
             for n, line in enumerate(f.read_text(encoding='utf-8').splitlines(), 1):
                 code = line.split('//', 1)[0]
+                if f.parent == OWN / 'i18n':
+                    # English lookup keys mirror existing upstream labels; apply this
+                    # style test to the translated result, not the source key.
+                    code = re.sub(r'^\s*m\.put\("(?:[^"\\]|\\.)*",\s*', '', code)
                 if not code.lstrip().startswith(('*', '/*')) and DOT.search(code):
                     hits.append(f'{f.relative_to(ROOT)}:{n}')
         self.assertEqual(hits, [], 'use PUi.joined(...) instead of " · "')

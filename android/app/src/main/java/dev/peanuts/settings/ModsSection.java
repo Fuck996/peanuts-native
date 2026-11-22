@@ -1,5 +1,7 @@
 package dev.peanuts.settings;
 
+import static dev.peanuts.i18n.L10n.tr;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.net.Uri;
@@ -326,9 +328,9 @@ public final class ModsSection {
     }
 
     private void confirmDelete(ModStore.Mod m) {
-        new AlertDialog.Builder(a).setTitle("Delete this mod?").setMessage(m.name + " and its files are deleted from this device" + (m.hasCode() ? ", and the builds with mods made with it" : "")
+        new AlertDialog.Builder(a).setTitle(tr("Delete this mod?")).setMessage(m.name + " and its files are deleted from this device" + (m.hasCode() ? ", and the builds with mods made with it" : "")
                         + ". The game and its saves are not changed.")
-                .setPositiveButton("Delete", dev.peanuts.ui.Feel.confirm((d, w) -> startDelete(m))).setNegativeButton("Cancel", null).show();
+                .setPositiveButton(tr("Delete"), dev.peanuts.ui.Feel.confirm((d, w) -> startDelete(m))).setNegativeButton(tr("Cancel"), null).show();
     }
 
     /**
@@ -429,7 +431,7 @@ public final class ModsSection {
     private static void importDone(Activity a, ModsSection s, boolean ok, String message) {
         importTitle = null; importText = null;
         if (ok) dev.peanuts.ui.Feel.accepted(a); else dev.peanuts.ui.Feel.refused(a);   // installed, or refused (a mod for another game)
-        if (!a.isFinishing() && !a.isDestroyed()) new AlertDialog.Builder(a).setTitle("Install mod").setMessage(message).setPositiveButton("OK", null).show();
+        if (!a.isFinishing() && !a.isDestroyed()) new AlertDialog.Builder(a).setTitle(tr("Install mod")).setMessage(message).setPositiveButton(tr("OK"), null).show();
         if (ok) { forget(s.titleId); s.autoBuild(); } else renderCurrent();
         poll();   // a build that waited for this install
     }
@@ -495,7 +497,7 @@ public final class ModsSection {
         body.addView(ui.setting(emoji, title, text, v -> message(title, text)), SectionUi.lp(0, 0));
     }
 
-    private void message(String title, String text) { new AlertDialog.Builder(a).setTitle(title).setMessage(text).setPositiveButton("OK", null).show(); }
+    private void message(String title, String text) { new AlertDialog.Builder(a).setTitle(title).setMessage(text).setPositiveButton(tr("OK"), null).show(); }
 
     /** The build, from the button or by itself (autoBuild, which has no haptic of a tap): the same rows, the same end. Renders the section on screen */
     private void startBuild(String variantId, File variantPack, ModBuild.Plan plan) {

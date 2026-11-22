@@ -1,5 +1,8 @@
 package dev.peanuts.ui;
 
+import static dev.peanuts.i18n.L10n.tr;
+import static dev.peanuts.i18n.BuildZh.text;
+
 import android.content.Context;
 import android.util.Log;
 
@@ -63,7 +66,7 @@ public interface BuildPort {
                 set(r, "companionPackage", s.installCompanion ? s.companionPackage : null);
                 Object proxy = java.lang.reflect.Proxy.newProxyInstance(listener.getClassLoader(), new Class<?>[] {listener}, (p, m, a) -> {
                     switch (m.getName()) {
-                        case "progress": l.progress(a[2] == null || a[2].toString().isEmpty() ? String.valueOf(a[0]) : a[0] + ": " + a[2], ((Number) a[1]).longValue(), 100); return null;
+                        case "progress": l.progress(a[2] == null || a[2].toString().isEmpty() ? tr(String.valueOf(a[0])) : tr(String.valueOf(a[0])) + ": " + a[2], ((Number) a[1]).longValue(), 100); return null;
                         case "done": l.done(Boolean.TRUE.equals(a[0]), a[1] == null ? "" : a[1].toString()); return null;
                         case "toString": return "BuildListener(peanuts.ui)";
                         case "hashCode": return System.identityHashCode(p);
@@ -75,7 +78,7 @@ public interface BuildPort {
             } catch (Throwable t) {
                 Throwable x = t.getCause() != null ? t.getCause() : t;
                 Log.w("peanuts", "build: " + x);
-                l.done(false, "Cannot start the build: " + x.getMessage());
+                l.done(false, text(tr("Cannot start the build: %s"), x.getMessage()));
             }
         }
 
@@ -84,7 +87,7 @@ public interface BuildPort {
 
     final class Stub implements BuildPort {
         @Override public void build(Context c, GameSheet.State s, Listener l) {
-            l.done(false, "The build pipeline is not in this build yet (" + PIPELINE_CLASS + ").");
+            l.done(false, text(tr("The build pipeline is not in this build yet (%s)."), PIPELINE_CLASS));
         }
     }
 }

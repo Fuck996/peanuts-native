@@ -1,5 +1,8 @@
 package dev.nxnative.android;
 
+import static dev.peanuts.i18n.L10n.tr;
+import static dev.peanuts.i18n.BuildZh.text;
+
 import android.app.ActivityManager;   // PEANUTS: the previous pack process exit
 import android.app.ApplicationExitInfo;
 import android.app.Notification;
@@ -100,7 +103,7 @@ public final class PackService extends Service {
         super.onCreate();
         nm = getSystemService(NotificationManager.class);
         pm = getSystemService(PowerManager.class);
-        NotificationChannel ch = new NotificationChannel(CHANNEL, "Preparing a game", NotificationManager.IMPORTANCE_LOW);
+        NotificationChannel ch = new NotificationChannel(CHANNEL, tr("Preparing a game"), NotificationManager.IMPORTANCE_LOW);   // PEANUTS: zh-CN display text.
         ch.setDescription("Progress while the app prepares a game from your dump");
         nm.createNotificationChannel(ch);
         wake = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "nxnative:pack");
@@ -1127,26 +1130,26 @@ public final class PackService extends Service {
         Notification.Builder b = new Notification.Builder(this, CHANNEL).setSmallIcon(R.drawable.ic_banana_mono).setOnlyAlertOnce(true)
                 .setCategory(Notification.CATEGORY_PROGRESS).setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
                 .setContentIntent(PendingIntent.getActivity(this, 0, open, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT));
-        String name = j == null ? "a game" : j.name();
+        String name = j == null ? tr("a game") : j.name();   // PEANUTS: zh-CN display text.
         String sim = engine.simulated() ? " (simulated)" : "";
-        if (j == null) return b.setContentTitle("Preparing " + name + sim).setContentText("Starting…").build();
+        if (j == null) return b.setContentTitle(text(tr("Preparing %s"), name + sim)).setContentText(tr("Starting…")).build();
         String state = j.state();
         int pct = (int) Math.round(j.overall() * 100);
         int i = j.current();
-        if (state.equals("done")) return b.setContentTitle(name + " is ready to play" + sim).setContentText("Open " + getString(R.string.app_name) + " and tap Play.")   /* PEANUTS: the app's own name */.setAutoCancel(true).build();
+        if (state.equals("done")) return b.setContentTitle(text(tr("%s is ready to play"), name + sim)).setContentText(text(tr("Open %s and tap Play."), getString(R.string.app_name)))   /* PEANUTS: the app's own name */.setAutoCancel(true).build();
         boolean running = state.equals("running") && worker != null;
         boolean waiting = state.equals("paused") && worker != null;   // the policy's pause: it goes on by itself
-        b.setContentTitle((running ? "Preparing " : waiting ? "Waiting: " : state.equals("failed") ? "Could not prepare " : "Paused: ") + name + sim);
+        b.setContentTitle(text(tr(running ? "Preparing %s" : waiting ? "Waiting: %s" : state.equals("failed") ? "Could not prepare %s" : "Paused: %s"), name + sim));
         Intent pause = new Intent(this, PackService.class).setAction(ACTION_PAUSE).putExtra(EXTRA_FROM, "notification");
-        Notification.Action pauseAction = new Notification.Action.Builder(null, "Pause",
+        Notification.Action pauseAction = new Notification.Action.Builder(null, tr("Pause"),
                 PendingIntent.getService(this, 1, pause, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT)).build();
         if (waiting) {
-            String why = Job.reasonText(j.reason()) + (j.reasonDetail().isEmpty() ? "" : "\n" + j.reasonDetail());
-            b.setContentText(Job.reasonText(j.reason())).setStyle(new Notification.BigTextStyle().bigText(j.stepText() + " · " + pct + " %\n" + why))
-                    .setSubText("Step " + (i + 1) + " of " + Job.STEPS.length + " · " + pct + " %").setOngoing(true).addAction(pauseAction);
+            String why = tr(Job.reasonText(j.reason())) + (j.reasonDetail().isEmpty() ? "" : "\n" + j.reasonDetail());
+            b.setContentText(tr(Job.reasonText(j.reason()))).setStyle(new Notification.BigTextStyle().bigText(j.stepText() + " · " + pct + " %\n" + why))
+                    .setSubText(text(tr("Step %d of %d · %d %%"), i + 1, Job.STEPS.length, pct)).setOngoing(true).addAction(pauseAction);
             if (j.canGoOn()) {
                 Intent goOn = new Intent(this, PackService.class).setAction(ACTION_GO_ON).putExtra(EXTRA_FROM, "notification");
-                b.addAction(new Notification.Action.Builder(null, "Go on anyway",
+                b.addAction(new Notification.Action.Builder(null, tr("Go on anyway"),
                         PendingIntent.getService(this, 3, goOn, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT)).build());
             }
             return b.build();
@@ -1155,12 +1158,12 @@ public final class PackService extends Service {
             long d = j.stepDone(i), t = j.stepTotal(i);
             if (t > 1) b.setProgress((int) Math.min(t, Integer.MAX_VALUE), (int) Math.min(d, t), false);
             else b.setProgress(100, pct, false);
-            b.setContentText(j.stepText() + j.quietText()).setSubText("Step " + (i + 1) + " of " + Job.STEPS.length + " · " + pct + " %").setOngoing(true).addAction(pauseAction);
+            b.setContentText(j.stepText() + j.quietText()).setSubText(text(tr("Step %d of %d · %d %%"), i + 1, Job.STEPS.length, pct)).setOngoing(true).addAction(pauseAction);   // PEANUTS: zh-CN display text.
         } else {
-            String why = state.equals("failed") ? j.error() : Job.reasonText(j.reason());
+            String why = state.equals("failed") ? j.error() : tr(Job.reasonText(j.reason()));
             b.setContentText(j.stepText() + " · " + pct + " %").setStyle(new Notification.BigTextStyle().bigText(j.stepText() + " · " + pct + " %\n" + why)).setOngoing(false);
             Intent resume = new Intent(this, PackService.class).setAction(ACTION_START).putExtra(EXTRA_JOB, j.file.getPath());
-            b.addAction(new Notification.Action.Builder(null, state.equals("failed") ? "Retry" : "Resume",
+            b.addAction(new Notification.Action.Builder(null, state.equals("failed") ? tr("Retry") : tr("Resume"),
                     PendingIntent.getForegroundService(this, 2, resume, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT)).build());
         }
         return b.build();

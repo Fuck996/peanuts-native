@@ -1,5 +1,7 @@
 package dev.peanuts.settings;
 
+import static dev.peanuts.i18n.L10n.tr;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -162,11 +164,11 @@ public final class CompanionSection {
             boolean update = item != null && have != null && Companions.compareVersions(item.version, have) > 0;
             CharSequence value;
             if (busy) value = busyText;
-            else if (have != null) value = dev.peanuts.ui.PUi.joined("Installed: " + Companions.label(pkg, have), !installedVerified ? "unverified" : null,
+            else if (have != null) value = dev.peanuts.ui.PUi.joined(tr("Installed: ") + Companions.label(pkg, have), !installedVerified ? "unverified" : null,
                     item == null ? (catalog == null && catalogError == null ? "checking the catalog…" : null) : update ? "update " + item.version + " available" : "up to date");
-            else if (item != null) value = dev.peanuts.ui.PUi.joined("Available: " + Companions.label(item.packageName, item.version), root == null ? "build the game first" : null);
+            else if (item != null) value = dev.peanuts.ui.PUi.joined(tr("Available: ") + Companions.label(item.packageName, item.version), root == null ? "build the game first" : null);
             else if (catalog == null && catalogError == null) value = "Checking the catalog…";
-            else if (catalogError != null) value = "Catalog unavailable: " + catalogError;
+            else if (catalogError != null) value = tr("Catalog unavailable: ") + catalogError;
             else value = "No companion in the catalog for this game";
             boolean hasVersions = root != null && (item != null || have != null) && c instanceof Activity;
             View.OnClickListener openVersions = !hasVersions ? null : v -> dev.peanuts.ui.CompanionVersions.open((Activity) c, titleId, () -> { installedKnown = false; render(); });
@@ -182,17 +184,17 @@ public final class CompanionSection {
             if (have != null && packNotice != null) body.addView(ui.setting("⚠️", packNotice[0], packNotice[1], null), SectionUi.lp(0, 0));
             String ss = secondScreen(c, titleId);
             body.addView(ui.setting("📱", "Second screen", ss.equals(OFF) ? (secondScreenChosen(c, titleId) ? "Off: the companion does not load" : "Off: no second display found, the companion does not load") : "Physical: the companion shows on the second display",
-                    v -> new AlertDialog.Builder(c).setTitle("Second screen").setSingleChoiceItems(new String[] {"Physical display", "Off"}, ss.equals(OFF) ? 1 : 0, (d, w) -> {
+                    v -> new AlertDialog.Builder(c).setTitle(tr("Second screen")).setSingleChoiceItems(new String[] {tr("Physical display"), tr("Off")}, ss.equals(OFF) ? 1 : 0, (d, w) -> {
                         dev.peanuts.ui.Feel.picked(d);
                         secondScreen(c, titleId, w == 1 ? OFF : PHYSICAL);
                         d.dismiss();
                         render();
-                    }).setNegativeButton("Cancel", null).show()), SectionUi.lp(0, 0));
+                    }).setNegativeButton(tr("Cancel"), null).show()), SectionUi.lp(0, 0));
         }
 
         void install(Companions.Item item) {
-            if (root == null) { dev.peanuts.ui.Feel.refused(c); Toast.makeText(c, "Build the game first: the companion goes beside its pack.", Toast.LENGTH_LONG).show(); return; }
-            busy = true; busyText = "Downloading " + Companions.label(item.packageName, item.version) + "…";
+            if (root == null) { dev.peanuts.ui.Feel.refused(c); Toast.makeText(c, tr("Build the game first: the companion goes beside its pack."), Toast.LENGTH_LONG).show(); return; }
+            busy = true; busyText = tr("Downloading ") + Companions.label(item.packageName, item.version) + "…";
             render();
             new Thread(() -> {
                 String err = null;
@@ -204,15 +206,15 @@ public final class CompanionSection {
                     busy = false;
                     installedKnown = false;   // Found in review: the one point this cache is invalidated - an install actually finished, not merely ticked
                     if (ferr == null) dev.peanuts.ui.Feel.accepted(c); else dev.peanuts.ui.Feel.refused(c);   // the install ended: done, or refused
-                    Toast.makeText(c, ferr == null ? "Installed " + Companions.label(item.packageName, item.version) + ". It loads at the game's next start." : "Install failed: " + ferr, Toast.LENGTH_LONG).show();
+                    Toast.makeText(c, ferr == null ? "Installed " + Companions.label(item.packageName, item.version) + ". It loads at the game's next start." : tr("Install failed: ") + ferr, Toast.LENGTH_LONG).show();
                     render();
                 });
             }, "peanuts-install").start();
         }
 
         void remove(String pkg) {
-            new AlertDialog.Builder(c).setTitle("Remove the companion?").setMessage(pkg + " is deleted from the game's folder. The catalog can install it again.")
-                    .setPositiveButton("Remove", dev.peanuts.ui.Feel.confirm((d, w) -> {
+            new AlertDialog.Builder(c).setTitle(tr("Remove the companion?")).setMessage(pkg + " is deleted from the game's folder. The catalog can install it again.")
+                    .setPositiveButton(tr("Remove"), dev.peanuts.ui.Feel.confirm((d, w) -> {
                         // off the UI thread: the delete walks shared storage and waits for the package's lock (an install of it may be downloading)
                         Handler mainUi = new Handler(Looper.getMainLooper());
                         new Thread(() -> {
@@ -221,12 +223,12 @@ public final class CompanionSection {
                             final String ferr = err;
                             mainUi.post(() -> {
                                 if (ferr != null) dev.peanuts.ui.Feel.refused(c);
-                                Toast.makeText(c, ferr == null ? "Removed" : "Remove failed: " + ferr, ferr == null ? Toast.LENGTH_SHORT : Toast.LENGTH_LONG).show();
+                                Toast.makeText(c, ferr == null ? "Removed" : tr("Remove failed: ") + ferr, ferr == null ? Toast.LENGTH_SHORT : Toast.LENGTH_LONG).show();
                                 installedKnown = false;
                                 render();
                             });
                         }, "peanuts-companion-remove").start();
-                    })).setNegativeButton("Cancel", null).show();
+                    })).setNegativeButton(tr("Cancel"), null).show();
         }
     }
 }

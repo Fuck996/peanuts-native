@@ -1,5 +1,7 @@
 package dev.nxnative.android;
 
+import static dev.peanuts.i18n.L10n.tr;   // PEANUTS: display-only Simplified Chinese
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.graphics.Color;
@@ -267,7 +269,7 @@ final class SidePanel extends FrameLayout {
             int k = i;
             boolean on = i == tab;
             TextView t = new TextView(act);
-            t.setText(TAB_NAMES[i]);
+            t.setText(tr(TAB_NAMES[i]));   // PEANUTS: translate display text
             t.setGravity(Gravity.CENTER);
             t.setMaxLines(1);
             t.setIncludeFontPadding(false);
@@ -279,7 +281,7 @@ final class SidePanel extends FrameLayout {
             t.setSelected(on);
             t.setFocusable(true);
             t.setOnClickListener(v -> showTab(k));
-            t.setContentDescription(TAB_NAMES[i] + " tab, " + (i + 1) + " of " + TAB_NAMES.length + (on ? ", selected" : ""));
+            t.setContentDescription(String.format(tr("%s tab, %d of %d%s"), tr(TAB_NAMES[i]), i + 1, TAB_NAMES.length, on ? tr(", selected") : ""));   // PEANUTS: translate display text
             tabs.addView(t, new LinearLayout.LayoutParams(0, h, 1f));
         }
         TextView x = new TextView(act);
@@ -289,7 +291,7 @@ final class SidePanel extends FrameLayout {
         x.setTextColor(0xFFE8EAED);
         x.setFocusable(true);
         x.setOnClickListener(v -> close());
-        x.setContentDescription("Close the panel, back to the game");
+        x.setContentDescription(tr("Close the panel, back to the game"));   // PEANUTS: translate display text
         tabs.addView(x, new LinearLayout.LayoutParams(h, h));
         tabs.post(this::tabTextSize);
     }
@@ -358,9 +360,15 @@ final class SidePanel extends FrameLayout {
         });
     }
 
+    private static String[] localized(String[] source) {   // PEANUTS: translate display text
+        String[] labels = source.clone();   // PEANUTS: translate display text
+        for (int i = 0; i < labels.length; i++) labels[i] = tr(labels[i]);   // PEANUTS: translate display text
+        return labels;   // PEANUTS: translate display text
+    }   // PEANUTS: translate display text
+
     private TextView head(String t) {
         TextView h = new TextView(act);
-        h.setText(t);
+        h.setText(tr(t));   // PEANUTS: translate display text
         h.setTypeface(Typeface.DEFAULT_BOLD);
         h.setTextSize(15);
         h.setPadding(0, Math.round(18 * getResources().getDisplayMetrics().density), 0, 0);
@@ -370,7 +378,7 @@ final class SidePanel extends FrameLayout {
 
     private TextView note(String t) {
         TextView n = new TextView(act);
-        n.setText(t);
+        n.setText(tr(t));   // PEANUTS: translate display text
         n.setTextSize(12);
         n.setTextColor(Color.LTGRAY);
         box.addView(n);
@@ -395,7 +403,7 @@ final class SidePanel extends FrameLayout {
         if (ScreenMode.fixed(game()) == null) {
             head("Console mode");
             RadioGroup cm = new RadioGroup(act);
-            for (int k = 0; k < 2; k++) { RadioButton b = new RadioButton(act); b.setId(ID_CONSOLE + k); b.setText(ScreenMode.NAMES[k]); cm.addView(b); }
+            for (int k = 0; k < 2; k++) { RadioButton b = new RadioButton(act); b.setId(ID_CONSOLE + k); b.setText(tr(ScreenMode.NAMES[k])); cm.addView(b); }   // PEANUTS: translate display text
             cm.check(ID_CONSOLE + ScreenMode.mode(act, game()));
             cm.setOnCheckedChangeListener((gr, id) -> {
                 int m = id - ID_CONSOLE;
@@ -404,7 +412,7 @@ final class SidePanel extends FrameLayout {
                 restyle(id);
             });
             box.addView(cm);
-            note("Changes now, as when a Switch leaves its dock, and is kept for this game. A game may take the new picture size only at its next scene, or at its next start.");
+            note(tr("Changes now, as when a Switch leaves its dock, and is kept for this game. A game may take the new picture size only at its next scene, or at its next start."));   // PEANUTS: translate display text
         }
         // PEANUTS end
         head("Frame rate cap");   // the game's own frame rate; frame generation (below, its own heading) adds frames on top
@@ -414,7 +422,7 @@ final class SidePanel extends FrameLayout {
             int cur = Prefs.paceCap(act, game());
             for (int i = 0; i < choices.length; i++) {
                 RadioButton b = new RadioButton(act);
-                b.setId(3000 + i); b.setText(Prefs.paceLabel(choices[i]));
+                b.setId(3000 + i); b.setText(tr(Prefs.paceLabel(choices[i])));   // PEANUTS: translate display text
                 b.setEnabled(FrameRateCaps.contains(allowed, choices[i]));
                 if (choices[i] == cur) b.setChecked(true);
                 caps.addView(b);
@@ -439,7 +447,7 @@ final class SidePanel extends FrameLayout {
                 int v = choices[i];
                 RadioButton b = new RadioButton(act);
                 b.setId(2000 + i);
-                b.setText(v == 0 ? "Game owned" : v + " fps");
+                b.setText(v == 0 ? tr("Game owned") : String.format(tr("%d fps"), v));   // PEANUTS: translate display text
                 if (v == cur || v == 0 && cur < 0) b.setChecked(true);   // a cap the launcher does not offer (40, 45 from env.txt or DM_CTL): none checked, the line below says it
                 caps.addView(b);
             }
@@ -451,18 +459,18 @@ final class SidePanel extends FrameLayout {
             });
         }
         box.addView(caps);
-        if (Prefs.limited(game())) note("Switching to or from Game owned applies on the next start.");
+        if (Prefs.limited(game())) note(tr("Switching to or from Game owned applies on the next start."));   // PEANUTS: translate display text
         if (Prefs.limited(game()) && Prefs.presentOnly(game())) note(Prefs.PRESENT_ONLY_NOTE);   // fps_limit_present: the limit paces the presents only
         if (Prefs.paced(game())) {   // Full game speed at low frame rates: sead's controller at the measured rate (Game settings has the same), live in the host
             android.widget.CheckBox full = new android.widget.CheckBox(act);
-            full.setText("Full game speed at low frame rates");
+            full.setText(tr("Full game speed at low frame rates"));   // PEANUTS: translate display text
             full.setChecked(Prefs.decouple(act, game()));
             full.setOnCheckedChangeListener((b, on) -> { Prefs.decouple(act, game(), on); Native.decoupleSet(on); });
             box.addView(full);
         }
         if (Prefs.steps(game())) {   // Hold 60 fps: one step a frame at the cap of 60 (Game settings has the same), live in the host
             android.widget.CheckBox hold = new android.widget.CheckBox(act);
-            hold.setText("Hold 60 fps: never drop to 30, no frame holds");
+            hold.setText(tr("Hold 60 fps: never drop to 30, no frame holds"));   // PEANUTS: translate display text
             hold.setChecked(Prefs.hold60(act, game()));
             hold.setOnCheckedChangeListener((b, on) -> { Prefs.hold60(act, game(), on); Native.hold60Set(on); });
             box.addView(hold);
@@ -471,12 +479,12 @@ final class SidePanel extends FrameLayout {
         boolean simple = Prefs.simpleRes(act, game());   // a game with Resolution presets, tester rows off: no Upscaler or Dynamic resolution here (Settings › Help › Tester settings)
         if (!simple && (Prefs.dlssGame(game()) || GameUpscaler.shown(act, game()))) {   // right under the frame rate cap: the Upscaler (the game's own upscaler and the window's scaling to the screen), for games whose network it replaces; for a game on the DLSS stand-in (no network to replace), the stand-in's modes with Motion clarity / sharpness
             GameUpscaler.rows(act, game(), box);
-            note(act instanceof GameActivity && ((GameActivity) act).live() ? "Applies from the next frame, kept for this game (the same setting as Game settings › Upscaler)."
-                    : "Applies at the next start (this run takes no live changes: DM_CTL is off).");
+            note(act instanceof GameActivity && ((GameActivity) act).live() ? tr("Applies from the next frame, kept for this game (the same setting as Game settings › Upscaler).")   // PEANUTS: translate display text
+                    : tr("Applies at the next start (this run takes no live changes: DM_CTL is off)."));   // PEANUTS: translate display text
         }
         if (Prefs.drsGame(game()) && !simple) {
             TextView drsHead = head("Dynamic resolution");   // the render size's range (Prefs.DRS), applied at each step; the heading shows it
-            box.addView(DrsSlider.view(act, Prefs.drs(act, game()), drsHead::setText, i -> { Prefs.drs(act, game(), i); Native.drsSet(Prefs.DRS[i][0], Prefs.DRS[i][1]); }));
+            box.addView(DrsSlider.view(act, Prefs.drs(act, game()), t -> drsHead.setText(tr(t)), i -> { Prefs.drs(act, game(), i); Native.drsSet(Prefs.DRS[i][0], Prefs.DRS[i][1]); }));   // PEANUTS: translate display text
         }
 
         lsfgNow = Lsfg.rows(act, box, "", () -> { Lsfg.push(act); refresh(); });
@@ -486,7 +494,7 @@ final class SidePanel extends FrameLayout {
             for (Profile.Option opt : prof.options) {
                 if (!opt.live) continue;
                 android.widget.CheckBox cb = new android.widget.CheckBox(act);
-                cb.setText(opt.label);
+                cb.setText(tr(opt.label));   // PEANUTS: translate display text
                 cb.setChecked(Prefs.gameOption(act, game(), opt.env));
                 cb.setOnCheckedChangeListener((b, on) -> Prefs.gameOption(act, game(), opt.env, on));
                 box.addView(cb);
@@ -513,13 +521,13 @@ final class SidePanel extends FrameLayout {
         rows.controls(box);
         // Rumble: the game's vibration on the controller or the phone, this game's setting (Game settings › Rumble), applied at once (GameActivity.rumble)
         android.widget.CheckBox rum = new android.widget.CheckBox(act);
-        rum.setText("Rumble (the game's vibration)");
+        rum.setText(tr("Rumble (the game's vibration)"));   // PEANUTS: translate display text
         rum.setChecked(Prefs.rumble(act, game()));
         rum.setOnCheckedChangeListener((b, on) -> { if (act instanceof GameActivity) ((GameActivity) act).rumble(on); else Prefs.rumble(act, game(), on); });
         box.addView(rum);
 
         TextView motionHead = head("Motion sensitivity");   // the phone's gyro scale (Prefs.MOTION_PCT), applied at each step and kept for the game (the same setting as Game settings › Controls)
-        box.addView(StepSlider.view(act, "Motion sensitivity", Prefs.MOTION_NAMES, Prefs.motionSens(act, game()), "Slower", "Faster", motionHead::setText,
+        box.addView(StepSlider.view(act, tr("Motion sensitivity"), Prefs.MOTION_NAMES, Prefs.motionSens(act, game()), tr("Slower"), tr("Faster"), t -> motionHead.setText(tr(t)),   // PEANUTS: translate display text
                 i -> { Prefs.motionSens(act, game(), i); Native.motionSens(Prefs.MOTION_PCT[i] / 100f); }));
 
         nextStartRows();
@@ -557,31 +565,31 @@ final class SidePanel extends FrameLayout {
 
     /** General: the panel's own look, Pause, Stop and Back to the game */
     private void general() {
-        note("The game runs on behind this panel; every change applies now and is kept, except those marked for the next start.");
+        note(tr("The game runs on behind this panel; every change applies now and is kept, except those marked for the next start."));   // PEANUTS: translate display text
         panelRows();
         cheatRows();
 
         Button pause = new Button(act);   // the game suspended (clock, graphics, threads, audio) until a tap on the screen, or A / Start: GameActivity.pause
-        pause.setText("Pause the game");
+        pause.setText(tr("Pause the game"));   // PEANUTS: translate display text
         pause.setOnClickListener(v -> { close(); if (act instanceof GameActivity) ((GameActivity) act).pause(); });
         LinearLayout.LayoutParams pl = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         pl.topMargin = Math.round(24 * getResources().getDisplayMetrics().density);
         box.addView(pause, pl);
         android.widget.CheckBox ret = new android.widget.CheckBox(act);
-        ret.setText("Pause when the game comes back from the background");
+        ret.setText(tr("Pause when the game comes back from the background"));   // PEANUTS: translate display text
         ret.setChecked(Prefs.pauseOnReturn(act, game()));
         ret.setOnCheckedChangeListener((b, on) -> Prefs.pauseOnReturn(act, game(), on));
         box.addView(ret);
         Button stop = new Button(act);
-        stop.setText("Stop the game");
-        stop.setOnClickListener(v -> padDialog(new AlertDialog.Builder(act).setTitle("Stop the game?").setMessage("The game ends; unsaved progress is lost. The log stays for Share log.")
-                .setPositiveButton("Stop", (d, w) -> { Native.note("stopped by the user"); ExitWatch.stopped(); if (act instanceof GameActivity) ((GameActivity) act).backToFrontend(); android.os.Process.killProcess(android.os.Process.myPid()); })
-                .setNegativeButton("Keep running", null).show()));
+        stop.setText(tr("Stop the game"));   // PEANUTS: translate display text
+        stop.setOnClickListener(v -> padDialog(new AlertDialog.Builder(act).setTitle(tr("Stop the game?")).setMessage(tr("The game ends; unsaved progress is lost. The log stays for Share log."))   // PEANUTS: translate display text
+                .setPositiveButton(tr("Stop"), (d, w) -> { Native.note("stopped by the user"); ExitWatch.stopped(); if (act instanceof GameActivity) ((GameActivity) act).backToFrontend(); android.os.Process.killProcess(android.os.Process.myPid()); })   // PEANUTS: translate display text
+                .setNegativeButton(tr("Keep running"), null).show()));   // PEANUTS: translate display text
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         lp.topMargin = Math.round(24 * getResources().getDisplayMetrics().density);
         box.addView(stop, lp);
         Button done = new Button(act);
-        done.setText("Back to the game");
+        done.setText(tr("Back to the game"));   // PEANUTS: translate display text
         done.setOnClickListener(v -> close());
         box.addView(done, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
     }
@@ -604,14 +612,14 @@ final class SidePanel extends FrameLayout {
         if (!ps.isEmpty()) {
             String rc = Prefs.resolutionChoice(act, game());
             boolean simple = Prefs.simpleRes(act, game());   // the tester rows are off (Settings › Help): the profile's choices alone
-            Button pr = row(ID_RES_PRESET, "Resolution", ResPresets.ADVANCED.equals(rc) && simple ? "Custom setup" : ResPresets.label(ps, rc));
+            Button pr = row(ID_RES_PRESET, tr("Resolution"), ResPresets.ADVANCED.equals(rc) && simple ? tr("Custom setup") : ResPresets.label(ps, rc));   // PEANUTS: translate display text
             pr.setOnClickListener(v -> {
                 String recPreset = Prefs.rec(act, game(), Recommend.RES_PRESET);
                 String[] labels = new String[simple ? ps.size() : ps.size() + 1];   // the same choices and words as Game settings › Resolution
                 for (int k = 0; k < ps.size(); k++) labels[k] = ResPresets.itemText(ps.get(k), k == 0, ps.get(k).id.equals(recPreset));
-                if (!simple) labels[ps.size()] = "Advanced (for testers)\nwindow and 3D scene set apart";
+                if (!simple) labels[ps.size()] = tr("Advanced (for testers)\nwindow and 3D scene set apart");   // PEANUTS: translate display text
                 ResPresets.Preset cur0 = ResPresets.of(ps, Prefs.resolutionChoice(act, game()));
-                new AlertDialog.Builder(act).setTitle("Resolution").setSingleChoiceItems(labels, cur0 != null ? ps.indexOf(cur0) : simple ? -1 : ps.size(), (d, w) -> {
+                new AlertDialog.Builder(act).setTitle(tr("Resolution")).setSingleChoiceItems(localized(labels), cur0 != null ? ps.indexOf(cur0) : simple ? -1 : ps.size(), (d, w) -> {   // PEANUTS: translate display text
                     Prefs.resPreset(act, game(), w < ps.size() ? ps.get(w).id : ResPresets.ADVANCED);   // the game's own setting: the next start takes it too
                     if (now) {
                         int[] m = p.resolutionLive(Prefs.startWindow(act, game()));
@@ -619,17 +627,17 @@ final class SidePanel extends FrameLayout {
                     }
                     d.dismiss();
                     restyle(ID_RES_PRESET);
-                }).setNegativeButton("Cancel", null).show();
+                }).setNegativeButton(tr("Cancel"), null).show();   // PEANUTS: translate display text
             });
-            note(ResPresets.NOTE + " Kept for this game (the same setting as Game settings › Resolution).");
+            note(tr(ResPresets.NOTE) + tr(" Kept for this game (the same setting as Game settings › Resolution)."));   // PEANUTS: translate display text
             if (!ResPresets.ADVANCED.equals(rc) || simple) return;
         }
-        String winTitle = ps.isEmpty() ? "Game resolution" : "Advanced \u00b7 Window";
+        String winTitle = ps.isEmpty() ? tr("Game resolution") : tr("Advanced \u00b7 Window");   // PEANUTS: translate display text
         String cur = Prefs.gameWindow(act, game());
         String[] modes = p.modes();
         if (modes != null) {   // a game with one docked and one handheld row (Profile.modes): those two radio buttons only, drawn as the Frame rate cap's
             RadioGroup g = new RadioGroup(act);
-            for (int k = 0; k < 2; k++) { RadioButton b = new RadioButton(act); b.setId(ID_RES + 1 + k); b.setText(p.modeLabel(k)); g.addView(b); }
+            for (int k = 0; k < 2; k++) { RadioButton b = new RadioButton(act); b.setId(ID_RES + 1 + k); b.setText(tr(p.modeLabel(k))); g.addView(b); }   // PEANUTS: translate display text
             if (p.modeOf(cur) >= 0) g.check(ID_RES + 1 + p.modeOf(cur));   // Original shows as Docked (Profile.modeOf)
             g.setOnCheckedChangeListener((gr, id) -> {
                 Prefs.gameWindow(act, game(), modes[id - ID_RES - 1]);   // the game's own setting: the next start takes it too
@@ -643,13 +651,13 @@ final class SidePanel extends FrameLayout {
             box.addView(g);
             return;
         }
-        Button r = row(ID_RES, winTitle, (Prefs.ownWindow(act, game()) ? "" : "Default · ") + Prefs.windowName(cur, false));
+        Button r = row(ID_RES, winTitle, (Prefs.ownWindow(act, game()) ? "" : tr("Default · ")) + tr(Prefs.windowName(cur, false)));   // PEANUTS: translate display text
         r.setOnClickListener(v -> {
             String[] labels = new String[Prefs.WINDOWS.length + 1];
-            labels[0] = "Default (" + Prefs.windowName(Prefs.defaultWindow(act, game()), false) + ")";
+            labels[0] = String.format(tr("Default (%s)"), tr(Prefs.windowName(Prefs.defaultWindow(act, game()), false)));   // PEANUTS: translate display text
             { Profile lp = Profile.of(game()); for (int li = 0; li < Prefs.WINDOWS.length; li++) labels[li + 1] = lp != null ? lp.windowLabel(Prefs.WINDOWS[li], Prefs.WINDOW_NAMES[li]) : Prefs.WINDOW_NAMES[li]; }   // a choice the game draws at another size says so (Profile.windowLabel)
             int checked = Prefs.ownWindow(act, game()) ? 1 + Math.max(0, java.util.Arrays.asList(Prefs.WINDOWS).indexOf(cur)) : 0;
-            new AlertDialog.Builder(act).setTitle(winTitle).setSingleChoiceItems(labels, checked, (d, w) -> {
+            new AlertDialog.Builder(act).setTitle(winTitle).setSingleChoiceItems(localized(labels), checked, (d, w) -> {   // PEANUTS: translate display text
                 Prefs.gameWindow(act, game(), w == 0 ? null : Prefs.WINDOWS[w - 1]);   // the game's own setting: the next start takes it too
                 if (!ps.isEmpty()) Prefs.resPreset(act, game(), ResPresets.ADVANCED);   // a window chosen under Advanced keeps Advanced
                 if (now) {
@@ -658,11 +666,11 @@ final class SidePanel extends FrameLayout {
                 }
                 d.dismiss();
                 restyle(ID_RES);
-            }).setNegativeButton("Cancel", null).show();
+            }).setNegativeButton(tr("Cancel"), null).show();   // PEANUTS: translate display text
         });
-        note(now ? "Applies now: the game resizes its picture within a few frames. Kept for this game (the same setting as Game settings › Game resolution)."
-                + (p.resolution.contains("/console") ? " The larger sizes run the game as on a docked console." : "")
-                : "Applies at the next start (the same setting as Game settings › Game resolution).");
+        note(now ? tr("Applies now: the game resizes its picture within a few frames. Kept for this game (the same setting as Game settings › Game resolution).")   // PEANUTS: translate display text
+                + (p.resolution.contains("/console") ? tr(" The larger sizes run the game as on a docked console.") : "")   // PEANUTS: translate display text
+                : tr("Applies at the next start (the same setting as Game settings › Game resolution)."));   // PEANUTS: translate display text
     }
 
     /**
@@ -684,19 +692,19 @@ final class SidePanel extends FrameLayout {
         };
         head(l.resTitle);
         RadioGroup ro = new RadioGroup(act);
-        for (int i = 0; i < outs.length; i++) { RadioButton b = new RadioButton(act); b.setId(ID_RES + 1 + i); b.setText(l.out(p, outs[i])); ro.addView(b); }
+        for (int i = 0; i < outs.length; i++) { RadioButton b = new RadioButton(act); b.setId(ID_RES + 1 + i); b.setText(tr(l.out(p, outs[i]))); ro.addView(b); }   // PEANUTS: translate display text
         ro.check(ID_RES + 1 + Math.max(0, java.util.Arrays.asList(outs).indexOf(cur.out)));
         ro.setOnCheckedChangeListener((gr, id) -> pick.accept(new Profile.Render(outs[id - ID_RES - 1], cur.pct, cur.quality), id));
         box.addView(ro);
         head(l.upscaleTitle);
         RadioGroup ru = new RadioGroup(act);
-        for (int i = 0; i < Profile.RENDER_PCTS.length; i++) { RadioButton b = new RadioButton(act); b.setId(ID_RES + 20 + i); b.setText(l.pct(Profile.RENDER_PCTS[i])); ru.addView(b); }
+        for (int i = 0; i < Profile.RENDER_PCTS.length; i++) { RadioButton b = new RadioButton(act); b.setId(ID_RES + 20 + i); b.setText(tr(l.pct(Profile.RENDER_PCTS[i]))); ru.addView(b); }   // PEANUTS: translate display text
         ru.check(ID_RES + 20 + Math.max(0, GameSettings.indexOfPct(cur.pct)));
         ru.setOnCheckedChangeListener((gr, id) -> pick.accept(new Profile.Render(cur.out, Profile.RENDER_PCTS[id - ID_RES - 20], cur.quality), id));
         box.addView(ru);
         head(l.gfxTitle);
         RadioGroup rg = new RadioGroup(act);
-        for (int i = 0; i < 2; i++) { RadioButton b = new RadioButton(act); b.setId(ID_RES + 40 + i); b.setText(l.gfx[i]); rg.addView(b); }
+        for (int i = 0; i < 2; i++) { RadioButton b = new RadioButton(act); b.setId(ID_RES + 40 + i); b.setText(tr(l.gfx[i])); rg.addView(b); }   // PEANUTS: translate display text
         rg.check(ID_RES + 40 + (cur.quality ? 0 : 1));
         rg.setOnCheckedChangeListener((gr, id) -> pick.accept(new Profile.Render(cur.out, cur.pct, id == ID_RES + 40), id));
         box.addView(rg);
@@ -715,7 +723,7 @@ final class SidePanel extends FrameLayout {
         boolean canFill = GameSettings.fillable(Profile.of(game()));   // PEANUTS: Display > Fill for a game whose view follows the screen's shape (GameSettings.fillable)
         boolean fillRun = ga != null && ga.runFill();   // PEANUTS: whether this run started with Fill
         String[] names = canFill ? new String[] {"Fit", "Stretch", "Fill"} : new String[] {"Fit", "Stretch"};   // PEANUTS: Fill
-        for (int i = 0; i < names.length; i++) { RadioButton b = new RadioButton(act); b.setId(ID_FIT + i); b.setText(names[i]); fit.addView(b); }
+        for (int i = 0; i < names.length; i++) { RadioButton b = new RadioButton(act); b.setId(ID_FIT + i); b.setText(tr(names[i])); fit.addView(b); }   // PEANUTS: translate display text
         fit.check(ID_FIT + (canFill && GameSettings.filling(act, game()) ? 2 : st ? 1 : 0));   // PEANUTS: Fill
         box.addView(fit);
         TextView sl = new TextView(act);
@@ -723,7 +731,7 @@ final class SidePanel extends FrameLayout {
         ss.setMax(PictureFit.steps());
         ss.setProgress(PictureFit.stepOfSize(sz));
         ss.setKeyProgressIncrement(1);   // the D-pad's left / right: 5 % a press
-        Runnable label = () -> sl.setText("Size " + PictureFit.sizeOfStep(ss.getProgress()) + " %" + (ss.getProgress() == PictureFit.steps() ? " (full)" : ""));
+        Runnable label = () -> sl.setText(tr("Size ") + PictureFit.sizeOfStep(ss.getProgress()) + " %" + (ss.getProgress() == PictureFit.steps() ? tr(" (full)") : ""));   // PEANUTS: translate display text
         label.run();
         Runnable send = () -> { if (ga != null) ga.picture(fit.getCheckedRadioButtonId() == ID_FIT + 1, PictureFit.sizeOfStep(ss.getProgress())); };
         // PEANUTS begin: Fill is kept at once and applies at the next start (the game's own shape number is set before its code is sealed: aspect_plan.h);
@@ -732,7 +740,7 @@ final class SidePanel extends FrameLayout {
         Runnable fillNote = () -> {
             boolean want = canFill && GameSettings.filling(act, game());
             fillNow.setVisibility(canFill && want != fillRun ? VISIBLE : GONE);
-            fillNow.setText(want ? "Restart the game to apply Fill." : "Restart the game to leave Fill.");
+            fillNow.setText(want ? tr("Restart the game to apply Fill.") : tr("Restart the game to leave Fill."));   // PEANUTS: translate display text
         };
         fit.setOnCheckedChangeListener((g, id) -> {
             if (canFill) {
@@ -751,10 +759,10 @@ final class SidePanel extends FrameLayout {
         if (canFill) { box.addView(fillNow); fillNote.run(); }   // PEANUTS: Fill's restart line, under the three choices
         box.addView(sl);
         box.addView(ss);
-        if (canFill) note("Fill makes the game draw for this screen's shape, so nothing is stretched and there are no bars: from the next start."
-                + (Profile.of(game()).aspectUntested ? " Untested on this game: it may look wrong or not start; pick Fit to go back." : ""));   // PEANUTS
-        note(live ? "Fit keeps the game's shape, Stretch fills the screen; below 100 % the picture is smaller, with black around it. Applies now, kept for this game."
-                : "Applies at the next start (this run takes no live changes: DM_CTL is off).");
+        if (canFill) note(tr("Fill makes the game draw for this screen's shape, so nothing is stretched and there are no bars: from the next start.")   // PEANUTS: translate display text
+                + (Profile.of(game()).aspectUntested ? tr(" Untested on this game: it may look wrong or not start; pick Fit to go back.") : ""));   // PEANUTS
+        note(live ? tr("Fit keeps the game's shape, Stretch fills the screen; below 100 % the picture is smaller, with black around it. Applies now, kept for this game.")   // PEANUTS: translate display text
+                : tr("Applies at the next start (this run takes no live changes: DM_CTL is off)."));   // PEANUTS: translate display text
         rows.position(box);
     }
 
@@ -764,10 +772,10 @@ final class SidePanel extends FrameLayout {
         String[] what = {"Size", "Text size"};
         int[] ids = {ID_SIZE, ID_TEXT}, cur = {Prefs.panelSize(act), Prefs.panelText(act)};
         for (int k = 0; k < 2; k++) {
-            TextView l = new TextView(act); l.setText(what[k]); box.addView(l);
+            TextView l = new TextView(act); l.setText(tr(what[k])); box.addView(l);   // PEANUTS: translate display text
             RadioGroup g = new RadioGroup(act);
             g.setOrientation(RadioGroup.HORIZONTAL);
-            for (int i = 0; i < PanelLook.NAMES.length; i++) { RadioButton b = new RadioButton(act); b.setId(ids[k] + i); b.setText(PanelLook.NAMES[i]); g.addView(b); }
+            for (int i = 0; i < PanelLook.NAMES.length; i++) { RadioButton b = new RadioButton(act); b.setId(ids[k] + i); b.setText(tr(PanelLook.NAMES[i])); g.addView(b); }   // PEANUTS: translate display text
             g.check(ids[k] + cur[k]);
             int base = ids[k];
             g.setOnCheckedChangeListener((gr, id) -> {
@@ -792,7 +800,7 @@ final class SidePanel extends FrameLayout {
             for (Profile.Option opt : prof.options) {
                 if (opt.live) continue;
                 android.widget.CheckBox cb = new android.widget.CheckBox(act);
-                cb.setText(opt.label);
+                cb.setText(tr(opt.label));   // PEANUTS: translate display text
                 Profile.Option source = Profile.findImpliedBy(prof.options, opt, env -> Prefs.gameOption(act, game(), env));
                 if (source != null) {
                     cb.setChecked(true);
@@ -808,8 +816,8 @@ final class SidePanel extends FrameLayout {
             }
         }
         String sum = PadMapUi.label(act, game());
-        Button map = row(ID_MAP, "Button mapping", sum);
-        map.setContentDescription("Button mapping: " + sum + ", applies at the next start");
+        Button map = row(ID_MAP, tr("Button mapping"), sum);   // PEANUTS: translate display text
+        map.setContentDescription(tr("Button mapping: ") + sum + tr(", applies at the next start"));   // PEANUTS: translate display text
         map.setOnClickListener(v -> PadMapUi.forGame(act, ga.game(), () -> restyle(ID_MAP)));
     }
 
@@ -834,9 +842,9 @@ final class SidePanel extends FrameLayout {
         map.setMinimumWidth(0);
         int pv = Math.round(4 * getResources().getDisplayMetrics().density);
         map.setPadding(0, pv, 0, pv);
-        android.text.SpannableStringBuilder t = new android.text.SpannableStringBuilder(label + "  ");
+        android.text.SpannableStringBuilder t = new android.text.SpannableStringBuilder(tr(label) + "  ");   // PEANUTS: translate display text
         int from = t.length();
-        t.append(value).append("  ›");
+        t.append(tr(value)).append("  ›");   // PEANUTS: translate display text
         t.setSpan(new android.text.style.ForegroundColorSpan(Color.LTGRAY), from, t.length(), android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         map.setText(t);
         box.addView(map, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
@@ -855,17 +863,17 @@ final class SidePanel extends FrameLayout {
         head("Controllers");
         PadOrder.Pad one = ga.playerOne();
         String chosen = Prefs.padFirst(act);
-        Button b = row(ID_ONE, "Player 1", (one != null ? one.name : "none") + (chosen.isEmpty() ? " (automatic)" : ""));
+        Button b = row(ID_ONE, tr("Player 1"), (one != null ? one.name : tr("none")) + (chosen.isEmpty() ? tr(" (automatic)") : ""));   // PEANUTS: translate display text
         b.setOnClickListener(v -> {
             String[] names = new String[pads.size() + 1];
-            names[0] = "Automatic";
+            names[0] = tr("Automatic");   // PEANUTS: translate display text
             int checked = 0;
             for (int i = 0; i < pads.size(); i++) { names[i + 1] = pads.get(i).name; if (!chosen.isEmpty() && chosen.equals(pads.get(i).key)) checked = i + 1; }
-            padDialog(new AlertDialog.Builder(act).setTitle("Player 1").setSingleChoiceItems(names, checked, (d, w) -> {
+            padDialog(new AlertDialog.Builder(act).setTitle(tr("Player 1")).setSingleChoiceItems(names, checked, (d, w) -> {   // PEANUTS: translate display text
                 ga.choosePlayerOne(w == 0 ? "" : pads.get(w - 1).key);
                 d.dismiss();
                 restyle(ID_ONE);
-            }).setNegativeButton("Cancel", null).show());
+            }).setNegativeButton(tr("Cancel"), null).show());   // PEANUTS: translate display text
         });
     }
 
@@ -882,8 +890,8 @@ final class SidePanel extends FrameLayout {
             boolean startedOwned = act instanceof GameActivity && ((GameActivity)act).gameOwnedAtStart();
             boolean restart = act instanceof GameActivity ? ((GameActivity)act).fpsRestartRequired(chosen) : (chosen == FrameRateCaps.GAME_OWNED) != startedOwned;
             fpsNow.setVisibility(restart || other ? VISIBLE : GONE);
-            if (restart) fpsNow.setText("Restart the game to apply " + Prefs.paceLabel(chosen) + ".");
-            else if (other) fpsNow.setText("This game moves in whole frames: " + chosen + " fps runs at " + held + " fps, at full game speed.");
+            if (restart) fpsNow.setText(String.format(tr("Restart the game to apply %s."), tr(Prefs.paceLabel(chosen))));   // PEANUTS: translate display text
+            else if (other) fpsNow.setText(String.format(tr("This game moves in whole frames: %s fps runs at %s fps, at full game speed."), chosen, held));   // PEANUTS: translate display text
         } else {
             int[] choices = {0, 120, 90, 60, 45, 40, 30, 20, 15};
             for (int i = 0; i < choices.length; i++) {
@@ -895,13 +903,13 @@ final class SidePanel extends FrameLayout {
             boolean own = cap >= 0 && rates == 0 && now > 0;
             caps.setVisibility(VISIBLE);
             if (cap >= 0 && now > 0) Prefs.ownRate(act, game(), own);   // remember native-rate-only titles for Game settings
-            String s = cap < 0 ? "This build has no frame rate cap."
-                    : now <= 0 ? "Starting…"
-                    : own ? "This game picks its own frame rate."
-                    : "Now " + now + " fps" + (cap > 0 ? ", capped at " + cap : ", the game's own") + ".";
-            fpsNow.setText(s);
+            String s = cap < 0 ? tr("This build has no frame rate cap.")   // PEANUTS: translate display text
+                    : now <= 0 ? tr("Starting…")   // PEANUTS: translate display text
+                    : own ? tr("This game picks its own frame rate.")   // PEANUTS: translate display text
+                    : (cap > 0 ? String.format(tr("Now %d fps, capped at %d."), now, cap) : String.format(tr("Now %d fps, the game's own."), now));   // PEANUTS: translate display text
+            fpsNow.setText(tr(s));   // PEANUTS: translate display text
         }
-        if (lsfgNow != null) { String st = Native.frameGenStatus(); int sp = st.indexOf(' '); lsfgNow.setText("Now: " + (sp > 0 ? st.substring(sp + 1) : st)); }
+        if (lsfgNow != null) { String st = Native.frameGenStatus(); int sp = st.indexOf(' '); lsfgNow.setText(tr("Now: ") + (sp > 0 ? st.substring(sp + 1) : st)); }   // PEANUTS: translate display text
         removeCallbacks(tick);   // a change calls refresh too: one loop, not one more per change
         postDelayed(tick, 500);
     }
