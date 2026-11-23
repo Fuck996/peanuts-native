@@ -73,6 +73,9 @@ public final class L10n {
             LauncherZh.addTo(m);
             SettingsZh.addTo(m);
             BuildZh.addTo(m);
+            UpdatePackZh.addTo(m);
+            UpdateSettingsZh.addTo(m);
+            ProfilesZh.addTo(m);
             OverlayZh.addTo(m);
             return m;
         }

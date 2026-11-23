@@ -60,18 +60,28 @@ jobs:
         run: |
           set -euo pipefail
           printf '\ndistributionSha256Sum=bd71102213493060956ec229d946beee57158dbd89d0e62b91bca0fa2c5f3531\n' >> gradle/wrapper/gradle-wrapper.properties
+          version="$(tr -d '\r\n' < ../../peanuts/VERSION)"
+          test "$version" = '0.1.7'
           ./gradlew --no-daemon -PnxApp=peanuts -PnxAppId=peanutszh \
+            "-PnxVersion=$version" -PnxVersionCode=107 \
             "-PnxLabel=Peanuts Native" "-PnxPackStage=$RUNNER_TEMP/peanuts-stage/stage" apk
 
       - name: Verify package, signing, and bundled packer
+        id: verify
         shell: bash
         run: |
           set -euo pipefail
           apk=android/app/out/nxnative-android-peanuts.apk
           tools="$ANDROID_SDK_ROOT/build-tools/36.0.0"
-          "$tools/apksigner" verify --verbose --print-certs "$apk"
+          "$tools/apksigner" verify --verbose --print-certs "$apk" | tee "$RUNNER_TEMP/apksigner.txt"
+          previous_cert='5cd71ec0965d7e461b9d188b54122fc6dceafdf344c3e77f8752be0a59639dbd'
+          if grep -Fq "certificate SHA-256 digest: $previous_cert" "$RUNNER_TEMP/apksigner.txt"; then
+            echo 'Test signing certificate matches the 0.1.6 build.'
+          else
+            echo '::warning::Test signing certificate differs from the 0.1.6 build; do not uninstall an existing app before backing up its data.'
+          fi
           "$tools/aapt" dump badging "$apk" > "$RUNNER_TEMP/peanuts-badging.txt"
-          grep -F "package: name='dev.nxnative.android.peanutszh'" "$RUNNER_TEMP/peanuts-badging.txt"
+          grep -F "package: name='dev.nxnative.android.peanutszh' versionCode='107' versionName='0.1.7'" "$RUNNER_TEMP/peanuts-badging.txt"
           grep -Fx "application-label:'Peanuts Native'" "$RUNNER_TEMP/peanuts-badging.txt"
           python peanuts/scripts/check-apk-holes.py "$apk"
           python - "$apk" <<'PY'
@@ -91,12 +101,15 @@ jobs:
               assert not any(path.lower().endswith('/lossless.dll') or path.lower() == 'lossless.dll' for path in entries)
           PY
           mkdir -p dist
-          cp "$apk" dist/Peanuts-Native-zh-CN-test.apk
-          (cd dist && sha256sum Peanuts-Native-zh-CN-test.apk)
+          version="$(tr -d '\r\n' < peanuts/VERSION)"
+          apk_name="Peanuts-Native-${version}-zh-CN-${GITHUB_SHA:0:8}.apk"
+          cp "$apk" "dist/$apk_name"
+          (cd dist && sha256sum "$apk_name")
+          echo "path=dist/$apk_name" >> "$GITHUB_OUTPUT"
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
-          path: dist/Peanuts-Native-zh-CN-test.apk
+          path: ${{ steps.verify.outputs.path }}
           archive: false
           if-no-files-found: error
           retention-days: 14
