@@ -92,11 +92,11 @@ jobs:
           PY
           mkdir -p dist
           cp "$apk" dist/Peanuts-Native-zh-CN-test.apk
-          (cd dist && sha256sum Peanuts-Native-zh-CN-test.apk > SHA256SUMS)
+          (cd dist && sha256sum Peanuts-Native-zh-CN-test.apk)
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
-          name: Peanuts-Native-zh-CN-test
-          path: dist/
+          path: dist/Peanuts-Native-zh-CN-test.apk
+          archive: false
           if-no-files-found: error
           retention-days: 14
