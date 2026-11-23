@@ -21,6 +21,19 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     steps:
+      - name: Require a fixed signing identity before building
+        shell: bash
+        env:
+          PN_ZH_KEYSTORE_B64: ${{ secrets.PN_ZH_KEYSTORE_B64 }}
+          PN_ZH_KEYSTORE_PASSWORD: ${{ secrets.PN_ZH_KEYSTORE_PASSWORD }}
+          PN_ZH_CERT_SHA256: ${{ vars.PN_ZH_CERT_SHA256 }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${PN_ZH_KEYSTORE_B64:-}" || -z "${PN_ZH_KEYSTORE_PASSWORD:-}" || ! "${PN_ZH_CERT_SHA256:-}" =~ ^[0-9a-fA-F]{64}$ ]]; then
+            echo '::error::Fixed signing is not configured. Set PN_ZH_KEYSTORE_B64 and PN_ZH_KEYSTORE_PASSWORD as Actions secrets and PN_ZH_CERT_SHA256 as an Actions variable (see peanuts/docs/ZH-CN-SIGNING.md). No APK will be uploaded.'
+            exit 1
+          fi
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
@@ -55,33 +68,68 @@ jobs:
           zsh peanuts/scripts/ondevice-stage.sh "$RUNNER_TEMP/peanuts-stage" all
 
       - name: Assemble Peanuts Native test APK
+        id: assemble
         shell: bash
         working-directory: android/app
         run: |
           set -euo pipefail
           printf '\ndistributionSha256Sum=bd71102213493060956ec229d946beee57158dbd89d0e62b91bca0fa2c5f3531\n' >> gradle/wrapper/gradle-wrapper.properties
           version="$(tr -d '\r\n' < ../../peanuts/VERSION)"
-          test "$version" = '0.1.7'
+          [[ "$version" =~ ^(0|[1-9][0-9]{0,3})\.(0|[1-9][0-9]{0,2})\.(0|[1-9][0-9]{0,2})$ ]]
+          version_code=$(( BASH_REMATCH[1] * 1000000 + BASH_REMATCH[2] * 1000 + BASH_REMATCH[3] ))
+          (( version_code >= 1007 && version_code <= 2100000000 ))
           ./gradlew --no-daemon -PnxApp=peanuts -PnxAppId=peanutszh \
-            "-PnxVersion=$version" -PnxVersionCode=107 \
+            "-PnxVersion=$version" "-PnxVersionCode=$version_code" \
             "-PnxLabel=Peanuts Native" "-PnxPackStage=$RUNNER_TEMP/peanuts-stage/stage" apk
+          printf 'version=%s\nversion_code=%s\n' "$version" "$version_code" >> "$GITHUB_OUTPUT"
+
+      # Signing is a separate final step; Gradle and the build dependencies are never passed the key.
+      - name: Sign with the fixed fork key
+        shell: bash
+        env:
+          PN_ZH_KEYSTORE_B64: ${{ secrets.PN_ZH_KEYSTORE_B64 }}
+          PN_ZH_KEYSTORE_PASSWORD: ${{ secrets.PN_ZH_KEYSTORE_PASSWORD }}
+          PN_ZH_CERT_SHA256: ${{ vars.PN_ZH_CERT_SHA256 }}
+        run: |
+          set -euo pipefail
+          umask 077
+          scratch="$(mktemp -d "$RUNNER_TEMP/peanuts-sign.XXXXXXXX")"
+          trap 'rm -rf -- "$scratch"' EXIT
+          key="$scratch/peanuts.p12"
+          printf '%s' "$PN_ZH_KEYSTORE_B64" | base64 --decode > "$key"
+          unset PN_ZH_KEYSTORE_B64
+          cert="$(keytool -exportcert -storetype PKCS12 -keystore "$key" -alias peanuts-zh -storepass:env PN_ZH_KEYSTORE_PASSWORD | sha256sum | cut -d ' ' -f 1)"
+          if [[ "$cert" != "${PN_ZH_CERT_SHA256,,}" ]]; then
+            echo '::error::The certificate inside the keystore does not match the pinned fingerprint; no APK will be uploaded.'
+            exit 1
+          fi
+          "$ANDROID_SDK_ROOT/build-tools/36.0.0/apksigner" sign \
+            --ks "$key" --ks-type PKCS12 --ks-key-alias peanuts-zh \
+            --ks-pass env:PN_ZH_KEYSTORE_PASSWORD --key-pass env:PN_ZH_KEYSTORE_PASSWORD \
+            --alignment-preserved true \
+            --v1-signing-enabled false --v2-signing-enabled true --v3-signing-enabled true --v4-signing-enabled false \
+            --out "$RUNNER_TEMP/peanuts-fixed.apk" android/app/out/nxnative-android-peanuts.apk
 
       - name: Verify package, signing, and bundled packer
         id: verify
         shell: bash
+        env:
+          PN_ZH_CERT_SHA256: ${{ vars.PN_ZH_CERT_SHA256 }}
+          PN_VERSION: ${{ steps.assemble.outputs.version }}
+          PN_VERSION_CODE: ${{ steps.assemble.outputs.version_code }}
         run: |
           set -euo pipefail
-          apk=android/app/out/nxnative-android-peanuts.apk
+          apk="$RUNNER_TEMP/peanuts-fixed.apk"
           tools="$ANDROID_SDK_ROOT/build-tools/36.0.0"
           "$tools/apksigner" verify --verbose --print-certs "$apk" | tee "$RUNNER_TEMP/apksigner.txt"
-          previous_cert='5cd71ec0965d7e461b9d188b54122fc6dceafdf344c3e77f8752be0a59639dbd'
-          if grep -Fq "certificate SHA-256 digest: $previous_cert" "$RUNNER_TEMP/apksigner.txt"; then
-            echo 'Test signing certificate matches the 0.1.6 build.'
-          else
-            echo '::warning::Test signing certificate differs from the 0.1.6 build; do not uninstall an existing app before backing up its data.'
+          cert="$(sed -n 's/^Signer #[0-9][0-9]* certificate SHA-256 digest: //p' "$RUNNER_TEMP/apksigner.txt")"
+          if [[ "${cert,,}" != "${PN_ZH_CERT_SHA256,,}" ]]; then
+            echo '::error::The signed APK does not have exactly the pinned signer; no APK will be uploaded.'
+            exit 1
           fi
+          "$tools/zipalign" -c -P 16 4 "$apk"
           "$tools/aapt" dump badging "$apk" > "$RUNNER_TEMP/peanuts-badging.txt"
-          grep -F "package: name='dev.nxnative.android.peanutszh' versionCode='107' versionName='0.1.7'" "$RUNNER_TEMP/peanuts-badging.txt"
+          grep -F "package: name='dev.nxnative.android.peanutszh' versionCode='$PN_VERSION_CODE' versionName='$PN_VERSION'" "$RUNNER_TEMP/peanuts-badging.txt"
           grep -Fx "application-label:'Peanuts Native'" "$RUNNER_TEMP/peanuts-badging.txt"
           python peanuts/scripts/check-apk-holes.py "$apk"
           python - "$apk" <<'PY'
@@ -101,8 +149,7 @@ jobs:
               assert not any(path.lower().endswith('/lossless.dll') or path.lower() == 'lossless.dll' for path in entries)
           PY
           mkdir -p dist
-          version="$(tr -d '\r\n' < peanuts/VERSION)"
-          apk_name="Peanuts-Native-${version}-zh-CN-${GITHUB_SHA:0:8}.apk"
+          apk_name="Peanuts-Native-${PN_VERSION}-zh-CN-${GITHUB_SHA:0:8}.apk"
           cp "$apk" "dist/$apk_name"
           (cd dist && sha256sum "$apk_name")
           echo "path=dist/$apk_name" >> "$GITHUB_OUTPUT"
