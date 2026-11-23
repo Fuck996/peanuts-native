@@ -61,14 +61,14 @@ final class ResScale {
         if (hidden(id)) return null;
         Ui.Setting s = new Ui.Setting(a, "🔍", "Resolution scale", v -> {
             String[] labels = new String[NAMES.length + 1];
-            labels[0] = "Default (Settings: " + SHORT[index(global(a))] + ")";
+            labels[0] = String.format(tr("Default (Settings: %s)"), SHORT[index(global(a))]);   // PEANUTS: zh-CN setting display
             System.arraycopy(NAMES, 0, labels, 1, NAMES.length);
             new PadFocus.Builder(a).setTitle(tr("Resolution scale") + " · " + g.name).setSingleChoiceItems(labels, own(a, id) ? index(quarters(a, id)) + 1 : 0, (x, w) -> {   // PEANUTS: zh-CN display text.
                 set(a, id, w == 0 ? null : QUARTERS[w - 1]);
                 x.dismiss();
                 done.run();
             }).setNegativeButton(tr("Cancel"), null).show();   // PEANUTS: zh-CN display text.
-        }).value(SHORT[index(quarters(a, id))] + (own(a, id) ? "" : " (default)")).chevron(a);
+        }).value(SHORT[index(quarters(a, id))] + (own(a, id) ? "" : tr(" (default)"))).chevron(a);   // PEANUTS: zh-CN setting display
         return s.note(NOTE);
     }
 

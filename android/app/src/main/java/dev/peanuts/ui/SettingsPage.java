@@ -255,7 +255,7 @@ public final class SettingsPage {
         String heading = null;
         for (int i = 0; i < content.getChildCount(); i++) {
             View v = content.getChildAt(i);
-            if (v instanceof TextView && v.isAccessibilityHeading()) { heading = String.valueOf(((TextView) v).getText()).trim(); continue; }
+            if (v instanceof TextView && v.isAccessibilityHeading()) { heading = sourceText((TextView) v); continue; }
             if (!(v instanceof LinearLayout) || ((LinearLayout) v).getOrientation() != LinearLayout.VERTICAL) continue;   // the header (a row), the hint line
             LinearLayout card = (LinearLayout) v;
             List<View> kids = new ArrayList<>();
@@ -274,6 +274,11 @@ public final class SettingsPage {
         return out;
     }
 
+    private static String sourceText(TextView view) {
+        Object source = view.getTag(R.id.peanuts_source_text);
+        return String.valueOf(source instanceof CharSequence ? source : view.getText()).trim();
+    }
+
     /** The title of a settings row (Ui.Setting / PUi.Setting: its tile, then a column whose first line is the title), else null */
     static String title(View v) {
         if (!(v instanceof LinearLayout) || ((LinearLayout) v).getOrientation() != LinearLayout.HORIZONTAL) return null;
@@ -281,7 +286,8 @@ public final class SettingsPage {
         if (r.getChildCount() < 2 || !(r.getChildAt(0) instanceof TextView) || !(r.getChildAt(1) instanceof LinearLayout)) return null;
         LinearLayout col = (LinearLayout) r.getChildAt(1);
         if (col.getOrientation() != LinearLayout.VERTICAL || col.getChildCount() == 0 || !(col.getChildAt(0) instanceof TextView)) return null;
-        return String.valueOf(((TextView) col.getChildAt(0)).getText()).trim();
+        Object source = v.getTag(R.id.peanuts_source_text);
+        return source instanceof String ? ((String) source).trim() : sourceText((TextView) col.getChildAt(0));
     }
 
     /**
@@ -317,7 +323,7 @@ public final class SettingsPage {
         if (x == null) return null;
         TextView v = value(row);
         android.widget.Switch sw = toggle(row);
-        String i = SettingsSections.icon(x.place, x.title, v != null ? v.getText() : null, sw != null ? sw.isChecked() : null);
+        String i = SettingsSections.icon(x.place, x.title, v != null ? sourceText(v) : null, sw != null ? sw.isChecked() : null);
         return i != null ? i : icon(x.place.section);
     }
 
@@ -440,7 +446,7 @@ public final class SettingsPage {
         ScrollView sv = (ScrollView) pane.getParent();
         for (int i = 0; i < page.getChildCount(); i++) {
             View v = page.getChildAt(i);
-            if (v instanceof TextView && v.isAccessibilityHeading() && group.equalsIgnoreCase(String.valueOf(((TextView) v).getText()).trim())) {
+            if (v instanceof TextView && v.isAccessibilityHeading() && group.equalsIgnoreCase(sourceText((TextView) v))) {
                 sv.post(() -> {
                     android.graphics.Rect r = new android.graphics.Rect(0, 0, v.getWidth(), v.getHeight());
                     sv.offsetDescendantRectToMyCoords(v, r);
@@ -890,8 +896,9 @@ public final class SettingsPage {
                     titles.add(tr(x.title));
                     String group = SettingsSections.MORE.equals(x.place.group) ? null : x.place.group;
                     CharSequence shown = v == null ? null : v.getText();
+                    String source = v == null ? null : sourceText(v);
                     SettingsHelp.Help h = SettingsHelp.of(x.title);
-                    texts.add(SettingsSearch.text(x.title, s.label, group, shown) + " " + tr(x.title) + " " + tr(s.label)
+                    texts.add(SettingsSearch.text(x.title, s.label, group, source) + " " + (shown == null ? "" : shown) + " " + tr(x.title) + " " + tr(s.label)
                             + " " + (group == null ? "" : tr(group)) + " " + (h == null ? "" : tr(h.text) + " " + (h.deflt == null ? "" : tr(h.deflt))));
                 }
             }

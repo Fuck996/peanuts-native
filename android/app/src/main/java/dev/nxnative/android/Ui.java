@@ -107,6 +107,7 @@ final class Ui {
     /** A group's label above its card (the settings page, a sheet) */
     static TextView section(Context c, CharSequence s) {
         TextView t = text(c, s, 12, R.color.bn_text_2, 700);
+        t.setTag(R.id.peanuts_source_text, s);   // PEANUTS: stable settings heading, independent of display locale
         t.setAllCaps(true);
         t.setLetterSpacing(0.08f);
         t.setPadding(dp(c, 4), 0, 0, 0);
@@ -562,6 +563,7 @@ final class Ui {
             LinearLayout col = new LinearLayout(c);
             col.setOrientation(LinearLayout.VERTICAL);
             col.setPadding(dp(c, 12), 0, dp(c, 8), 0);
+            view.setTag(R.id.peanuts_source_text, title);   // PEANUTS: stable settings row title
             this.title = text(c, title, 15, R.color.bn_text, 600);
             this.title.setMaxLines(3);   // one line at the normal font scale (titles are kept short); a large font scale wraps it rather than cut it
             this.title.setEllipsize(TextUtils.TruncateAt.END);
@@ -622,7 +624,7 @@ final class Ui {
             return this;
         }
 
-        Setting value(CharSequence s) { value.setText(L10n.tr(s)); value.setVisibility(s == null || s.length() == 0 ? View.GONE : View.VISIBLE); return this; }   // PEANUTS: zh-CN display text.
+        Setting value(CharSequence s) { value.setTag(R.id.peanuts_source_text, s); value.setText(L10n.tr(s)); value.setVisibility(s == null || s.length() == 0 ? View.GONE : View.VISIBLE); return this; }   // PEANUTS: zh-CN display text.
         /** What the setting needs before it works, in a short line of its own under the value (null: none), so the value still says what the setting does */
         Setting status(CharSequence s) { status.setText(L10n.tr(s)); status.setVisibility(s == null || s.length() == 0 ? View.GONE : View.VISIBLE); return this; }
         /** The tag on the tags' line (null: none); warn picks the warning tint (Ui.tag) */

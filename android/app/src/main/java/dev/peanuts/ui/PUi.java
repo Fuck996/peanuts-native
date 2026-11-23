@@ -148,6 +148,7 @@ public final class PUi {
     /** A group's label above its card (the settings page, a sheet) */
     public static TextView section(Context c, CharSequence s) {
         TextView t = text(c, s, 12, R.color.bn_text_2, 700);
+        t.setTag(R.id.peanuts_source_text, s);
         t.setAllCaps(true);
         t.setLetterSpacing(0.08f);
         t.setPadding(dp(c, 4), 0, 0, 0);
@@ -564,6 +565,7 @@ public final class PUi {
             LinearLayout col = new LinearLayout(c);
             col.setOrientation(LinearLayout.VERTICAL);
             col.setPadding(dp(c, 14), 0, dp(c, 8), 0);
+            view.setTag(R.id.peanuts_source_text, title);
             TextView t = text(c, title, 16, R.color.bn_text, 600);
             t.setSingleLine(true);
             t.setEllipsize(TextUtils.TruncateAt.END);
@@ -592,7 +594,7 @@ public final class PUi {
             return this;
         }
 
-        public Setting value(CharSequence s) { value.setText(L10n.tr(s)); value.setVisibility(s == null || s.length() == 0 ? View.GONE : View.VISIBLE); return this; }
+        public Setting value(CharSequence s) { value.setTag(R.id.peanuts_source_text, s); value.setText(L10n.tr(s)); value.setVisibility(s == null || s.length() == 0 ? View.GONE : View.VISIBLE); return this; }
     }
 
     /** A choice of a few words side by side in one rounded track (Recommended | Custom): the picked one on banana yellow. pick gets the index when the player picks another */

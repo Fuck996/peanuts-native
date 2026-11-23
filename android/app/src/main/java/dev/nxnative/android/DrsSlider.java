@@ -1,5 +1,7 @@
 package dev.nxnative.android;
 
+import static dev.peanuts.i18n.L10n.tr;   // PEANUTS: localized setting values
+
 import android.app.AlertDialog;
 import android.content.Context;
 import android.widget.CheckBox;
@@ -18,7 +20,7 @@ final class DrsSlider {
 
     private static int pos(int index) { return Prefs.DRS.length - 1 - index; }   // slider position: 0 = the smallest size
     /** The title with the range appended: "Dynamic resolution: 40% to 100%", "Dynamic resolution: Off (native size)" */
-    static String title(int index) { return "Dynamic resolution: " + Prefs.DRS_NAMES[index] + (index == 0 ? " (native size)" : " to 100%"); }
+    static String title(int index) { return index == 0 ? tr("Dynamic resolution: Off (native size)") : String.format(tr("Dynamic resolution: %s to 100%%"), Prefs.DRS_NAMES[index]); }   // PEANUTS: zh-CN setting display
 
     /** A slider set to index; title(i) goes to setTitle at each step, onChange(index) at each step the user makes */
     static LinearLayout view(Context c, int index, Consumer<String> setTitle, IntConsumer onChange) {

@@ -190,5 +190,21 @@ public final class UpdateSettingsZh {
         m.put("60 fps", "60 帧");
         m.put("Home, or hold − and +", "按 Home，或同时长按 − 和 +");
         m.put("Player", "玩家");
+        m.put("Recommended (%s)", "推荐（%s）");
+        m.put("Default (Settings: %s)", "默认（全局设置：%s）");
+        m.put("Default (this game: %s)", "默认（本游戏：%s）");
+        m.put("Default (Game owned)", "默认（由游戏决定）");
+        m.put(" · unavailable for this game", " · 本游戏不支持");
+        m.put(" (experimental)", "（实验性）");
+        m.put(" (default)", "（默认）");
+        m.put("Each game's own (most: Docked)", "由各游戏决定（大多为底座模式）");
+        m.put("1x (the game's own)", "1×（游戏原始分辨率）");
+        m.put("The size the game's picture is drawn at. Above 1x is sharper and heavier, below 1x is lighter. From the next start.", "设置画面渲染尺寸。高于 1× 更清晰但负载更高，低于 1× 则更轻。下次启动生效。");
+        m.put("The picture size the game draws at, as on a Switch. Handheld also turns on the game's touch screen. ", "设置游戏画面尺寸，如同在 Switch 上切换模式。掌机模式也会启用游戏触屏。 ");
+        m.put("From the next start; while the game runs, its in-game panel changes it at once.", "下次启动生效；也可在运行时从游戏内面板即时切换。");
+        m.put("Dynamic resolution: Off (native size)", "动态分辨率：关闭（原始尺寸）");
+        m.put("Dynamic resolution: %s to 100%%", "动态分辨率：%s 至 100%%");
+        m.put(" Tap a Switch button, then press the controller button for it.", " 点按一个 Switch 按键，再按下要绑定的实体手柄按键。");
+        m.put("Press the controller button for Switch %s.", "请按下要映射为 Switch %s 的手柄按键。");
     }
 }

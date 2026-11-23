@@ -68,6 +68,8 @@ public final class L10n {
             m.put("Settings", "设置");
             m.put("Game", "游戏");
             m.put("Library", "游戏库");
+            m.put("Pokémon Legends: Z-A", "宝可梦传说 Z-A");
+            m.put("Fire Emblem: Three Houses", "火焰之纹章 风花雪月");
             m.put("Help", "帮助");
             m.put("About", "关于");
             LauncherZh.addTo(m);

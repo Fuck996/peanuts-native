@@ -83,15 +83,15 @@ final class ScreenMode {
         if (fx != null && fx.isEmpty()) return null;
         if (fx != null) return new Ui.Setting(a, "📺", "Console mode", null).value(fx);
         Ui.Setting s = new Ui.Setting(a, "📺", "Console mode", v -> {
-            String[] labels = {"Default (" + (global(a) < 0 ? "this game: " + SHORT[own(id)] : "Settings: " + SHORT[global(a)]) + ")", NAMES[0], NAMES[1]};
+            String[] labels = {String.format(tr(global(a) < 0 ? "Default (this game: %s)" : "Default (Settings: %s)"), tr(SHORT[global(a) < 0 ? own(id) : global(a)])), NAMES[0], NAMES[1]};   // PEANUTS: zh-CN setting display
             new PadFocus.Builder(a).setTitle(tr("Console mode") + " · " + g.name).setSingleChoiceItems(labels, own(a, id) ? mode(a, id) + 1 : 0, (x, w) -> {   // PEANUTS: zh-CN display text.
                 set(a, id, w == 0 ? null : w - 1);
                 x.dismiss();
                 done.run();
             }).setNegativeButton(tr("Cancel"), null).show();   // PEANUTS: zh-CN display text.
-        }).value(SHORT[mode(a, id)] + (own(a, id) ? "" : " (default)")).chevron(a);
+        }).value(tr(SHORT[mode(a, id)]) + (own(a, id) ? "" : tr(" (default)"))).chevron(a);   // PEANUTS: zh-CN setting display
         String n = NOTES.get(id);
-        return s.note((n != null ? n + " " : "The picture size the game draws at, as on a Switch. Handheld also turns on the game's touch screen. ") + "From the next start; while the game runs, its in-game panel changes it at once.");
+        return s.note((n != null ? tr(n) + " " : tr("The picture size the game draws at, as on a Switch. Handheld also turns on the game's touch screen. ")) + tr("From the next start; while the game runs, its in-game panel changes it at once."));   // PEANUTS: zh-CN setting display
     }
 
     /** Settings › Performance and picture */

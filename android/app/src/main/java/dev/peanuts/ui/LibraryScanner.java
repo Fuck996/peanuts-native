@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.util.Log;
 
 import dev.peanuts.PeanutsPrefs;
+import dev.peanuts.i18n.L10n;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -151,7 +152,7 @@ final class LibraryScanner {
             if (t.name == null) t.name = catalogNames.get(t.titleId);
             if (t.name == null) t.name = profiles.get(t.titleId);
             if (t.name == null) for (Upstream.Entry e : list) if (e.titleId.equals(t.titleId) && !e.name.isEmpty()) { t.name = e.name; break; }
-            if (t.name == null || t.name.isEmpty()) t.name = t.titleId;
+            t.name = displayName(t.titleId, t.name);
             // the status
             if (!profiles.containsKey(t.titleId)) t.status = Status.NO_PROFILE;
             else {
@@ -373,6 +374,16 @@ final class LibraryScanner {
     }
 
     /** The base title ID an update or DLC belongs to, from its own ID: an update clears bit 11; a DLC is base + 0x1000 + n */
+    // Fork-local display names only. Never use these for file paths, profile lookup, or IDs.
+    static String displayName(String titleId, String fallback) {
+        String canonical;
+        if ("0100F43008C44000".equals(titleId)) canonical = "Pokémon Legends: Z-A";
+        else if ("010055D009F78000".equals(titleId)) canonical = "Fire Emblem: Three Houses";
+        else return fallback == null || fallback.isEmpty() ? titleId : fallback;
+        String localized = L10n.tr(canonical);
+        return !canonical.equals(localized) || fallback == null || fallback.isEmpty() ? localized : fallback;
+    }
+
     static String baseOf(String titleId, int kind) {
         try {
             long id = Long.parseUnsignedLong(titleId, 16);

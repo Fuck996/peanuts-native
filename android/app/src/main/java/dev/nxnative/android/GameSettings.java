@@ -714,7 +714,7 @@ final class GameSettings {
             return;
         }
         String[] labels = new String[Prefs.WINDOWS.length + 1];
-        labels[0] = "Default (" + Prefs.windowName(Prefs.defaultWindow(a, g.titleId), false) + ")";
+        labels[0] = String.format(tr("Default (%s)"), tr(Prefs.windowName(Prefs.defaultWindow(a, g.titleId), false)));   // PEANUTS: zh-CN setting display
         { Profile lp = Profile.of(g.titleId); for (int li = 0; li < Prefs.WINDOWS.length; li++) labels[li + 1] = lp != null ? lp.windowLabel(Prefs.WINDOWS[li], Prefs.WINDOW_NAMES[li]) : Prefs.WINDOW_NAMES[li]; }   // a choice the game draws at another size says so (Profile.windowLabel)
         int checked = Prefs.ownWindow(a, g.titleId) ? 1 + Math.max(0, Arrays.asList(Prefs.WINDOWS).indexOf(Prefs.gameWindow(a, g.titleId))) : 0;
         new PadFocus.Builder(a).setTitle(windowTitle(g) + " · " + g.name).setSingleChoiceItems(labels, checked, (x, w) -> {
@@ -749,18 +749,24 @@ final class GameSettings {
 
     private static void xbox(MainActivity a, Game g, Runnable done) {   // Default first: the game follows Settings again
         String[] labels = new String[Prefs.XBOX_NAMES.length + 1];
-        labels[0] = "Default (Settings: " + Prefs.xboxLabel(Prefs.xboxButtons(a)) + ")";
+        labels[0] = String.format(tr("Default (Settings: %s)"), tr(Prefs.xboxLabel(Prefs.xboxButtons(a))));   // PEANUTS: zh-CN setting display
         System.arraycopy(Prefs.XBOX_NAMES, 0, labels, 1, Prefs.XBOX_NAMES.length);
         int checked = Prefs.ownXboxButtons(a, g.titleId) ? Prefs.xboxButtons(a, g.titleId) + 1 : 0;
-        new PadFocus.Builder(a).setTitle("Xbox button label swap · " + g.name).setSingleChoiceItems(labels, checked, (x, w) -> {
+        new PadFocus.Builder(a).setTitle(tr("Xbox button label swap") + " · " + g.name).setSingleChoiceItems(labels, checked, (x, w) -> {   // PEANUTS: zh-CN setting display
             Prefs.xboxButtons(a, g.titleId, w == 0 ? null : w - 1);
             x.dismiss();
             done.run();
         }).setNegativeButton(tr("Cancel"), null).show();   // PEANUTS: zh-CN display text.
     }
 
+    // PEANUTS: Localize the visible rate only; preserve the option index and enablement.
+    private static String paceDisplay(int rate) {
+        if (rate == FrameRateCaps.GAME_OWNED) return tr("Game owned");
+        return String.format(tr("%d fps"), rate <= 0 ? 60 : rate) + (rate > 60 ? tr(" (experimental)") : "");
+    }
+
     private static android.widget.ListAdapter capItems(MainActivity a, String[] labels, boolean[] enabled) {
-        return new android.widget.ArrayAdapter<String>(a, android.R.layout.simple_list_item_single_choice, labels) {
+        return new android.widget.ArrayAdapter<CharSequence>(a, android.R.layout.simple_list_item_single_choice, dev.peanuts.i18n.L10n.items(labels)) {   // PEANUTS: zh-CN setting display
             @Override public boolean areAllItemsEnabled() { return false; }
             @Override public boolean isEnabled(int position) { return enabled[position]; }
             @Override public View getView(int position, View convert, ViewGroup parent) {
@@ -778,12 +784,12 @@ final class GameSettings {
             Integer rc = Prefs.recCap(a, g.titleId);
             // PEANUTS: Describe the game-owned default for an optional presentation cap.
             Profile p = Profile.of(g.titleId);
-            if (rc != null) labels[0] = "Recommended (" + Prefs.paceLabel(rc) + ")";
-            else if (p != null && (p.optInPresentRate() || p.ownedByDefault)) labels[0] = "Default (Game owned)";   // PEANUTS: fps_owned_default too
-            else if (pl > 0) labels[0] = "Default (this game's: " + Prefs.paceLabel(Prefs.paceOf(pl)) + ")";
-            else labels[0] = "Default (Settings: " + Prefs.paceLabel(Prefs.paceOf(Prefs.fpsCap(a))) + ")";
+            if (rc != null) labels[0] = String.format(tr("Recommended (%s)"), paceDisplay(rc));
+            else if (p != null && (p.optInPresentRate() || p.ownedByDefault)) labels[0] = tr("Default (Game owned)");   // PEANUTS: fps_owned_default too
+            else if (pl > 0) labels[0] = String.format(tr("Default (this game: %s)"), paceDisplay(Prefs.paceOf(pl)));
+            else labels[0] = String.format(tr("Default (Settings: %s)"), paceDisplay(Prefs.paceOf(Prefs.fpsCap(a))));
             int checked = 0, cur = Prefs.paceCap(a, g.titleId);
-            for (int k = 0; k < choices.length; k++) { enabled[k + 1] = FrameRateCaps.contains(allowed, choices[k]); labels[k + 1] = Prefs.paceLabel(choices[k]) + (enabled[k + 1] ? "" : " · unavailable for this game"); if (Prefs.ownFpsCap(a, g.titleId) && choices[k] == cur) checked = k + 1; }
+            for (int k = 0; k < choices.length; k++) { enabled[k + 1] = FrameRateCaps.contains(allowed, choices[k]); labels[k + 1] = paceDisplay(choices[k]) + (enabled[k + 1] ? "" : tr(" · unavailable for this game")); if (Prefs.ownFpsCap(a, g.titleId) && choices[k] == cur) checked = k + 1; }   // PEANUTS: zh-CN setting display
             new PadFocus.Builder(a).setTitle(tr("Frame rate cap") + " · " + g.name).setSingleChoiceItems(capItems(a, labels, enabled), checked, (x, w) -> {   // PEANUTS: zh-CN display text.
                 if (!enabled[w]) return;
                 Prefs.fpsCap(a, g.titleId, w == 0 ? null : choices[w - 1]);
@@ -803,9 +809,9 @@ final class GameSettings {
         int cur = Prefs.fpsCap(a, g.titleId);
         if (own && cur < 0) checked = 1;
         for (int k = 0; k < n; k++) {
-            labels[k + 2] = (choices[k] == 0 ? "Game owned" : MainActivity.capLabel(choices[k]));
+            labels[k + 2] = (choices[k] == 0 ? tr("Game owned") : MainActivity.capLabel(choices[k]));   // PEANUTS: zh-CN setting display
             enabled[k + 2] = choices[k] == 0 || !Prefs.ownRate(a, g.titleId) && FrameRateCaps.contains(Prefs.FPS_CAPS, choices[k]);
-            if (!enabled[k + 2]) labels[k + 2] += " · unavailable for this game";
+            if (!enabled[k + 2]) labels[k + 2] += tr(" · unavailable for this game");   // PEANUTS: zh-CN setting display
             if (own && choices[k] == cur) checked = k + 2;
         }
         new PadFocus.Builder(a).setTitle(tr("Frame rate cap") + " · " + g.name).setSingleChoiceItems(capItems(a, labels, enabled), checked, (x, w) -> {   // PEANUTS: zh-CN display text.
@@ -835,7 +841,7 @@ final class GameSettings {
     static String dflt(boolean own, String v) { return v; }   // a row shows the value alone; the list's first choice says Default (Settings: …)
 
     /** The first choice of a list, which removes the game's own value: "Recommended (x)" where this phone has a recommendation (Prefs.recommended), else "Default (Settings: y)" */
-    private static String firstLabel(String recName, String settingsValue) { return recName != null ? "Recommended (" + recName + ")" : "Default (Settings: " + settingsValue + ")"; }
+    private static String firstLabel(String recName, String settingsValue) { return recName != null ? String.format(tr("Recommended (%s)"), tr(recName)) : String.format(tr("Default (Settings: %s)"), tr(settingsValue)); }   // PEANUTS: zh-CN setting display
     private static String recLabel(String[] names, String[] words, String recommended) { int i = Recommend.index(words, recommended); return i >= 0 && i < names.length ? names[i] : null; }
 
     /** A choice with firstLabel's choice first: picking it removes the game's own value (set(null)) */

@@ -65,6 +65,10 @@ jobs:
         run: |
           set -euo pipefail
           python peanuts/tests/test_zh_catalog.py
+          python peanuts/tests/test_zh_settings_routes.py
+          mapfile -t game_ids < <(grep -E '^[0-9A-F]{16}$' peanuts/release-titles.txt)
+          (( ${#game_ids[@]} > 0 ))
+          sh peanuts/scripts/check-profiles.sh "${game_ids[@]}"
           zsh peanuts/scripts/ondevice-stage.sh "$RUNNER_TEMP/peanuts-stage" all
 
       - name: Assemble Peanuts Native test APK
@@ -77,8 +81,13 @@ jobs:
           version="$(tr -d '\r\n' < ../../peanuts/VERSION)"
           [[ "$version" =~ ^(0|[1-9][0-9]{0,3})\.(0|[1-9][0-9]{0,2})\.(0|[1-9][0-9]{0,2})$ ]]
           version_code=$(( BASH_REMATCH[1] * 1000000 + BASH_REMATCH[2] * 1000 + BASH_REMATCH[3] ))
-          (( version_code >= 1007 && version_code <= 2100000000 ))
-          ./gradlew --no-daemon -PnxApp=peanuts -PnxAppId=peanutszh \
+          # Move past the earlier signed 0.1.7 APK (1007), keeping future builds monotonic.
+          (( version_code >= 1007 && version_code < 2100000000 ))
+          version_code=$(( version_code + 1 ))
+          # The default Gradle list belongs to Banana Native, not Peanuts Native.
+          nx_games="$(grep -E '^[0-9A-F]{16}$' ../../peanuts/release-titles.txt | paste -sd , -)"
+          [[ -n "$nx_games" ]]
+          ./gradlew --no-daemon -PnxApp=peanuts -PnxAppId=peanutszh "-PnxGames=$nx_games" \
             "-PnxVersion=$version" "-PnxVersionCode=$version_code" \
             "-PnxLabel=Peanuts Native" "-PnxPackStage=$RUNNER_TEMP/peanuts-stage/stage" apk
           printf 'version=%s\nversion_code=%s\n' "$version" "$version_code" >> "$GITHUB_OUTPUT"
@@ -133,7 +142,13 @@ jobs:
           grep -Fx "application-label:'Peanuts Native'" "$RUNNER_TEMP/peanuts-badging.txt"
           python peanuts/scripts/check-apk-holes.py "$apk"
           python - "$apk" <<'PY'
-          import sys, zipfile
+          import io, re, sys, zipfile
+          from pathlib import Path
+
+          ids = re.findall(r"(?m)^[0-9A-F]{16}$", Path("peanuts/release-titles.txt").read_text())
+          assert len(ids) == len(set(ids)) and ids, "Missing or duplicate Peanuts release titles"
+          assert {"010055D009F78000", "0100F43008C44000"} <= set(ids), "Regression: the two reference games are not in the release list"
+
           with zipfile.ZipFile(sys.argv[1]) as apk:
               entries = set(apk.namelist())
               required = {
@@ -146,6 +161,15 @@ jobs:
                   'assets/pack/tools.zip',
               }
               assert required <= entries, f"Missing native files: {required - entries}"
+              missing_runtime = {f"assets/profiles/{i}.profile.bin" for i in ids} - entries
+              assert not missing_runtime, f"Missing Android runtime profiles: {sorted(missing_runtime)}"
+              with zipfile.ZipFile(io.BytesIO(apk.read("assets/pack/tools.zip"))) as tools:
+                  missing_build = {f"dm/games/{i}/game.tsv" for i in ids} - set(tools.namelist())
+                  assert not missing_build, f"Missing on-device build profiles: {sorted(missing_build)}"
+              dex = [apk.read(n) for n in entries if re.fullmatch(r"classes[0-9]*\.dex", n)]
+              missing_catalog = [i for i in ids if not any(i.encode() + b"\t" in d for d in dex)]
+              assert not missing_catalog, f"Missing launcher catalog rows: {missing_catalog}"
+              print(f"Confirmed {len(ids)} release titles in runtime profiles, pack tools and launcher catalog")
               assert not any(path.lower().endswith('/lossless.dll') or path.lower() == 'lossless.dll' for path in entries)
           PY
           mkdir -p dist

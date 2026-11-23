@@ -1,5 +1,7 @@
 package dev.nxnative.android;
 
+import static dev.peanuts.i18n.L10n.tr;   // PEANUTS: localized setting values
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.view.InputDevice;
@@ -42,7 +44,7 @@ final class PadMapUi {
         PadMap m = PadMap.parse(spec, labelled);
         LinearLayout box = new LinearLayout(a);
         box.setOrientation(LinearLayout.VERTICAL);
-        box.addView(Ui.small(a, note + " Tap a Switch button, then press the controller button for it."));
+        box.addView(Ui.small(a, tr(note) + tr(" Tap a Switch button, then press the controller button for it.")));   // PEANUTS: zh-CN setting display
         Ui.Setting[] rows = new Ui.Setting[PadMap.SWITCH.length];
         Runnable refresh = () -> { for (int sw : PadMap.EDIT_ORDER) rows[sw].value("Controller: " + m.pressedBy(sw)); };
         for (int sw : PadMap.EDIT_ORDER) {
@@ -57,7 +59,7 @@ final class PadMapUi {
     /** Waits for one controller button (a key, an analog trigger past half way, or the hat) and hands its source on; Back or Cancel ends it */
     private static void capture(Activity a, int sw, java.util.function.IntConsumer picked) {
         FrameLayout f = new FrameLayout(a);
-        TextView t = Ui.small(a, "Press the controller button for Switch " + PadMap.SWITCH_NAMES[sw] + ".");
+        TextView t = Ui.small(a, String.format(tr("Press the controller button for Switch %s."), PadMap.SWITCH_NAMES[sw]));   // PEANUTS: zh-CN setting display
         t.setTextSize(16);
         f.addView(t);
         f.setFocusable(true);
