@@ -3,7 +3,7 @@ name: Peanuts Native zh-CN test APK
 
 on:
   push:
-    branches: [zh-cn/android]
+    branches: [experimental/san14pk-android]
     paths:
       - '.github/workflows/peanuts-zh-apk.yml'
   workflow_dispatch:
@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   apk:
-    if: github.repository == 'Fuck996/peanuts-native' && github.ref == 'refs/heads/zh-cn/android'
+    if: github.repository == 'Fuck996/peanuts-native' && github.ref == 'refs/heads/experimental/san14pk-android'
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     steps:
@@ -173,7 +173,7 @@ jobs:
               assert not any(path.lower().endswith('/lossless.dll') or path.lower() == 'lossless.dll' for path in entries)
           PY
           mkdir -p dist
-          apk_name="Peanuts-Native-${PN_VERSION}-zh-CN-${GITHUB_SHA:0:8}.apk"
+          apk_name="Peanuts-Native-${PN_VERSION}-zh-CN-San14PK-test-${GITHUB_SHA:0:8}.apk"
           cp "$apk" "dist/$apk_name"
           (cd dist && sha256sum "$apk_name")
           echo "path=dist/$apk_name" >> "$GITHUB_OUTPUT"
