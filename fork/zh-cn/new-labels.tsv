@@ -1,0 +1,117 @@
+CRT filter	CRT 滤镜
+Mods tab	模组标签页
+Dual-screen companions	双屏伴侣
+TV and monitors	电视和显示器
+Both screens, a TV, rotation, keeping the screen on	双屏、电视、旋转和保持屏幕常亮
+Rotation, a TV, keeping the screen on, and a second screen	旋转、电视、保持常亮和副屏
+The game's cover	游戏封面
+Stats	统计
+Android's	Android 系统
+Needs	需要
+Game defaults	游戏默认设置
+Mods & Cheats	模组与金手指
+Cheat files	金手指文件
+Copy to another user	复制给其他用户
+On this device	此设备
+Now	当前
+Back up, restore and import	备份、恢复与导入
+Rumble on	震动已开启
+Rumble off	震动已关闭
+As in Settings	沿用全局设置
+buttons as in Settings	按键沿用全局设置
+Built	已构建
+Not built yet	尚未构建
+Share log, title ID and folders	分享日志、游戏 ID 和文件夹
+Search every switch; ...	搜索所有选项……
+For testing. Every switch at Auto	用于测试，所有选项默认为自动
+Home	主页
+Areas	分类
+Turn off	关闭
+Change	更改
+Show saves	查看存档
+Overview	概览
+Games	游戏
+Credits	制作人员
+Licenses	许可证
+Peanuts cracked	已完成构建的游戏
+Bananas Popped	已完成构建的游戏
+All	全部
+With a dual-screen companion	具有双屏伴侣
+Made by	制作
+Contributors	贡献者
+Everyone on GitHub	GitHub 上的所有贡献者
+Built on	基于
+In this app	此应用中
+Plays your own Switch games natively on this device.	在此设备上原生运行自己的 Switch 游戏。
+The list of games is not in this build.	此构建没有包含游戏列表。
+Thanks to everyone who tested a game on their device and wrote what they saw.	感谢所有在设备上测试游戏并反馈结果的玩家。
+Draws the picture as a CRT shows it: scanlines, and for the CRT looks an aperture-grille mask and a vignette, curved as well. A game can have its own, and the in-game panel changes it live.	模拟 CRT 显示效果，包括扫描线、栅格遮罩、暗角和曲面效果。每个游戏可独立设置，也可在游戏中实时调整。
+The in-game panel's Mods tab: the game's cheats and mods while it runs. A game's own Mods & Cheats page can hide it for that game.	在游戏内面板显示金手指和模组标签页。可在单个游戏的模组与金手指页面中隐藏。
+Dual-screen companions are pages made for one game that show on the second screen while you play, like its map, items or stats. Install, update or remove them here, also from a .dsmod.zip file without the internet.	双屏伴侣是在游玩期间显示在副屏的游戏专用页面，如地图、物品或统计。可在这里安装、更新、移除，也支持从 .dsmod.zip 文件离线安装。
+What a connected TV or monitor shows. System leaves it to Android and the device, as for any app. Play on the TV starts a game full screen there, and the screen it left goes black.	设置连接电视或显示器时的内容。系统模式由 Android 决定；电视游玩模式会在外接屏全屏运行游戏，原屏变黑。
+How the game is drawn and how fast it runs. What is not set here follows Settings.	设置游戏的画面与运行速度。未单独设置的项目沿用全局设置。
+Cheats and mods you added from this device. A cheat works at once in the game, a mod from its next start.	管理本机添加的金手指和模组。金手指立即生效，模组在下次启动时生效。
+The game's saves: back one up, bring one back, or give it to another user.	备份、恢复或向其他用户复制游戏存档。
+The game's own switches and its language. Most apply from the next start.	游戏专属选项及语言，多数在下次启动时生效。
+Rumble, buttons and motion for this game. What is not set here follows Settings.	设置此游戏的震动、按键和体感。未单独设置的项目沿用全局设置。
+The second screen's page made for this game, and what that screen shows while it runs.	管理此游戏的副屏伴侣及游玩时副屏显示的内容。
+The game's files, its build, its pack, its folders and its shortcut.	管理游戏文件、构建、资源包、文件夹和快捷方式。
+Your play time, the newest log for a bug report, and the game's details.	查看游玩时间、用于错误报告的最新日志及游戏详情。
+For testing and troubleshooting. Each switch starts at Auto.	用于测试与故障排查，各选项默认自动。
+Starts the game's Switch 2 Edition with what is set on this page.	按此页面的设置启动游戏的 Switch 2 版本。
+Starts the game with what is set on this page.	按此页面的设置启动游戏。
+Ask when the app opens and before games from shortcuts or frontends	应用启动时，以及通过快捷方式或前端启动游戏前询问
+Asks when the app opens and before games from shortcuts	应用启动时以及通过快捷方式启动游戏前询问
+The Vulkan driver this game runs on. A driver picked here is for this game only; Default follows Settings.	此游戏使用的 Vulkan 驱动。单独选择的驱动仅对此游戏生效；默认沿用全局设置。
+The size the game draws at. Higher is sharper and needs more of the GPU. From the next start.	游戏渲染分辨率，越高越清晰，GPU 负载也越高。下次启动生效。
+The size of the game's window, set apart from its 3D scene. For testers.	独立于 3D 场景的游戏窗口大小，用于测试。
+The size of the game's 3D scene inside its window. Menus and text stay sharp. From the next start.	窗口内 3D 场景的渲染分辨率，菜单和文字保持清晰。下次启动生效。
+How much of the picture the game draws before it is scaled up. Higher is sharper and slower.	超分前游戏的渲染比例，越高越清晰，速度越慢。
+The game's own quality for its effects and detail.	游戏特效和细节的画质。
+Docked draws as on a TV, up to 1080p. Handheld draws as on the Switch's own screen, which is lighter, and turns on its touch screen.	主机模式以电视画质渲染，最高 1080p；掌机模式负载较低，并启用触摸屏。
+Draws the game's picture at a multiple of the size it asks for. Above 1x is sharper and heavier, below 1x is lighter. From the next start.	按游戏请求分辨率的倍数渲染。高于 1 倍更清晰、负载更高，低于 1 倍更轻。下次启动生效。
+How the game's picture is scaled up to the screen. FSR and SGSR also sharpen it. It changes at once in a running game.	将游戏画面缩放至屏幕的方式。FSR 和 SGSR 也会锐化画面，运行中立即生效。
+How much of the frames before the upscaler keeps. Steady hides shimmer, Clear shows less ghosting.	超分保留历史帧的程度。稳定模式减少闪烁，清晰模式减少重影。
+How strongly the upscaler sharpens the picture. Higher is crisper and can show hard edges.	超分锐化强度。越高越清晰，也可能出现硬边。
+Fit keeps the game's shape with bars at its sides, Stretch fills the screen, and Fill lets a game that can draw for this screen's shape fill it.	适应模式保留原比例并留黑边；拉伸模式铺满屏幕；填充模式让支持屏幕比例的游戏铺满屏幕。
+A wider picture where the game can draw one. From the next start.	在支持的游戏中扩大画面宽度。下次启动生效。
+The highest frame rate this game runs at. A lower cap saves battery and keeps the device cooler. It changes at once in a running game.	此游戏的最高帧率。较低上限更省电且降低发热，运行中立即生效。
+Keeps the game at 60 when a frame is late, instead of dropping to 30.	帧延迟时尽量保持 60 帧，而非降至 30 帧。
+Keeps the game at its normal speed when the frame rate drops. Off, it slows down with the frame rate, as on the console.	掉帧时保持正常游戏速度。关闭后会像主机上一样随帧率降低而减速。
+Lets the game draw smaller while a scene is heavy, so its frame rate holds.	复杂场景降低渲染分辨率以稳定帧率。
+Which game Play starts: the Switch game or its Switch 2 Edition. Both use one save.	选择启动 Switch 原版或 Switch 2 版本，两者共用存档。
+All grass and foliage, or less of it for less work on the GPU.	完整显示植被，或减少植被以降低 GPU 负载。
+Skips layers the picture covers anyway. Faster; turn it off if something is missing from the picture.	跳过被其他画面遮挡的图层以提高速度；画面缺失时关闭。
+Plays together with a PC that hosts the game.	与作为主机的电脑联机游玩。
+The language the game starts in. Default follows the phone's language where the game has it.	游戏启动时使用的语言，默认在游戏支持时跟随手机语言。
+The clock the game sees, for its day and night. From the next start.	游戏中的时间，用于昼夜变化。下次启动生效。
+Lets this game rumble the controller, or the phone when no controller is connected.	允许游戏震动手柄，未连接手柄时震动手机。
+Which button of your controller presses which Switch button, for this game. Default follows Settings.	此游戏的手柄按键映射。默认沿用全局设置。
+How far the phone's gyro turns the aim. From the next start.	手机陀螺仪控制瞄准的灵敏度。下次启动生效。
+The second screen's page made for this game: install it, update it or remove it.	安装、更新或移除此游戏的副屏伴侣。
+Whether the companion shows on the second screen while the game runs.	游玩时是否在副屏显示伴侣。
+Copies the save into a backup you can bring back. The game and its save stay as they are.	创建可恢复的存档备份，不影响游戏和当前存档。
+Brings back a backup. The save you have now is backed up first.	恢复备份前会先备份当前存档。
+Takes a save from a .zip or a folder. The save you have now is backed up first.	从 ZIP 或文件夹导入存档，导入前先备份当前存档。
+Gives this save to another user of this device. Their save is backed up first.	将存档复制给此设备的另一用户，先备份对方原有存档。
+Backs the save up, then deletes it, so the game starts from the beginning.	备份并删除存档，使游戏从头开始。
+Opens the game's build: rebuild it after an update, or import the game again.	打开游戏构建页面，可在更新后重新构建或再次导入。
+Makes the game's pack again from its dump, for what no longer fits.	从游戏转储重新生成资源包，解决资源不匹配问题。
+The preparation of this game that runs now: forget it, or delete its files.	管理当前游戏的准备任务：清除记录或删除其文件。
+Saves the game's pack as one .zip, in a folder you pick.	将游戏资源包导出为 ZIP 到指定文件夹。
+Takes a pack from a .zip or a folder. It is checked before it replaces anything.	从 ZIP 或文件夹导入资源包，替换前会进行检查。
+Where the game's files, its pack and its saves are.	游戏文件、资源包和存档所在位置。
+A shortcut on the phone's home screen that starts this game.	在手机桌面创建直接启动此游戏的快捷方式。
+The time you played this game in this app, counted only while it runs.	此应用中此游戏的游玩时间，仅在运行时计时。
+Sends the newest log of a run or a build of this game, for a bug report.	分享此游戏最近的运行或构建日志，以便报告问题。
+Sends the newest log of a run of this game, for a bug report.	分享此游戏最近的运行日志，以便报告问题。
+Sends the logs of this game's build in one .zip, for a bug report.	以 ZIP 分享此游戏的构建日志，以便报告问题。
+What the game's GPU timestamps measure. Per segment lets its dynamic resolution see the real GPU time.	GPU 时间戳的测量方式。按区段测量可让动态分辨率获取实际 GPU 耗时。
+Draws repeated meshes as one: less work for the GPU. For testing.	将重复网格实例化绘制，降低 GPU 负载。用于测试。
+Render passes as before dynamic rendering: less work on the CPU with Qualcomm's driver. For testing.	使用传统渲染通道，可能降低高通驱动的 CPU 负载。用于测试。
+Makes the game's pipelines in the background: a short pop-in instead of a stutter.	后台构建图形管线，用短暂的画面缺失换取较少卡顿。
+Keeps texture data in a file instead of compressed memory. Needs gigabytes free.	将纹理数据存入文件而不是压缩内存，需要数 GB 可用空间。
+Keeps the game's busiest threads off the small cores. Faster, and a little warmer.	让游戏繁忙线程避开小核，速度更快但发热略高。
+When you come back to the game from another app, it waits paused until a tap.	从其他应用返回游戏时保持暂停，直到点击屏幕。
+Every switch the app's host has for this game, by area, with a search. Each starts at Auto.	按分类显示此游戏的全部高级选项，支持搜索，默认自动。
+Lines for the game's environment, for testers.	游戏环境变量设置，用于测试。

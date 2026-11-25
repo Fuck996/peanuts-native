@@ -1,0 +1,189 @@
+# Fork-only test package. Never publish a release or install on a device.
+name: Peanuts Native zh-CN test APK
+
+on:
+  push:
+    branches: [experimental/0.1.8-san14pk-zh]
+    paths:
+      - '.github/workflows/peanuts-zh-apk.yml'
+      - 'fork/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: peanuts-zh-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    if: github.repository == 'Fuck996/peanuts-native' && github.ref == 'refs/heads/experimental/0.1.8-san14pk-zh'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - name: Require a fixed signing identity before building
+        shell: bash
+        env:
+          PN_ZH_KEYSTORE_B64: ${{ secrets.PN_ZH_KEYSTORE_B64 }}
+          PN_ZH_KEYSTORE_PASSWORD: ${{ secrets.PN_ZH_KEYSTORE_PASSWORD }}
+          PN_ZH_CERT_SHA256: ${{ vars.PN_ZH_CERT_SHA256 }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${PN_ZH_KEYSTORE_B64:-}" || -z "${PN_ZH_KEYSTORE_PASSWORD:-}" || ! "${PN_ZH_CERT_SHA256:-}" =~ ^[0-9a-fA-F]{64}$ ]]; then
+            echo '::error::Fixed signing is not configured. Set PN_ZH_KEYSTORE_B64 and PN_ZH_KEYSTORE_PASSWORD as Actions secrets and PN_ZH_CERT_SHA256 as an Actions variable (see fork/zh-cn/SIGNING.md). No APK will be uploaded.'
+            exit 1
+          fi
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.14'
+      - uses: actions/setup-dotnet@2016bd2012dba4e32de620c46fe006a3ac9f0602 # v5.0.1
+        with:
+          dotnet-version: '10.0.115'
+
+      - name: Set up Android build tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends zsh cmake ninja-build zlib1g-dev
+          python -m pip install fonttools==4.61.1
+          android_sdk="${ANDROID_SDK_ROOT:-${ANDROID_HOME:?Android SDK is missing}}"
+          "${android_sdk}/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$android_sdk" \
+            'platforms;android-36' 'build-tools;36.0.0' 'ndk;28.2.13676358' 'cmake;3.22.1'
+          echo "ANDROID_HOME=$android_sdk" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$android_sdk" >> "$GITHUB_ENV"
+          echo "ANDROID_NDK_HOME=$android_sdk/ndk/28.2.13676358" >> "$GITHUB_ENV"
+          echo "JAVA_HOME=${JAVA_HOME_17_X64:?JDK 17 is missing}" >> "$GITHUB_ENV"
+          echo "$JAVA_HOME_17_X64/bin" >> "$GITHUB_PATH"
+
+      - name: Check localization and build the real on-device packer
+        shell: bash
+        run: |
+          set -euo pipefail
+          python fork/zh-cn/apply.py
+          python fork/zh-cn/test_catalog.py
+          python fork/zh-cn/test_routes.py
+          python fork/san14pk/apply.py
+          mapfile -t game_ids < <(grep -E '^[0-9A-F]{16}$' peanuts/release-titles.txt)
+          (( ${#game_ids[@]} > 0 ))
+          sh peanuts/scripts/check-profiles.sh "${game_ids[@]}"
+          zsh peanuts/scripts/ondevice-stage.sh "$RUNNER_TEMP/peanuts-stage" all
+
+      - name: Assemble Peanuts Native test APK
+        id: assemble
+        shell: bash
+        working-directory: android/app
+        run: |
+          set -euo pipefail
+          printf '\ndistributionSha256Sum=bd71102213493060956ec229d946beee57158dbd89d0e62b91bca0fa2c5f3531\n' >> gradle/wrapper/gradle-wrapper.properties
+          version="$(tr -d '\r\n' < ../../peanuts/VERSION)"
+          [[ "$version" =~ ^(0|[1-9][0-9]{0,3})\.(0|[1-9][0-9]{0,2})\.(0|[1-9][0-9]{0,2})$ ]]
+          version_code=$(( BASH_REMATCH[1] * 1000000 + BASH_REMATCH[2] * 1000 + BASH_REMATCH[3] ))
+          # Move past the earlier signed 0.1.7 APK (1007), keeping future builds monotonic.
+          (( version_code >= 1007 && version_code < 2100000000 ))
+          version_code=$(( version_code + 1 ))
+          # The default Gradle list belongs to Banana Native, not Peanuts Native.
+          nx_games="$(grep -E '^[0-9A-F]{16}$' ../../peanuts/release-titles.txt | paste -sd , -)"
+          [[ -n "$nx_games" ]]
+          ./gradlew --no-daemon -PnxApp=peanuts -PnxAppId=peanutszh "-PnxGames=$nx_games" \
+            "-PnxVersion=$version" "-PnxVersionCode=$version_code" \
+            "-PnxLabel=Peanuts Native" "-PnxPackStage=$RUNNER_TEMP/peanuts-stage/stage" apk
+          printf 'version=%s\nversion_code=%s\n' "$version" "$version_code" >> "$GITHUB_OUTPUT"
+
+      # Signing is a separate final step; Gradle and the build dependencies are never passed the key.
+      - name: Sign with the fixed fork key
+        shell: bash
+        env:
+          PN_ZH_KEYSTORE_B64: ${{ secrets.PN_ZH_KEYSTORE_B64 }}
+          PN_ZH_KEYSTORE_PASSWORD: ${{ secrets.PN_ZH_KEYSTORE_PASSWORD }}
+          PN_ZH_CERT_SHA256: ${{ vars.PN_ZH_CERT_SHA256 }}
+        run: |
+          set -euo pipefail
+          umask 077
+          scratch="$(mktemp -d "$RUNNER_TEMP/peanuts-sign.XXXXXXXX")"
+          trap 'rm -rf -- "$scratch"' EXIT
+          key="$scratch/peanuts.p12"
+          printf '%s' "$PN_ZH_KEYSTORE_B64" | base64 --decode > "$key"
+          unset PN_ZH_KEYSTORE_B64
+          cert="$(keytool -exportcert -storetype PKCS12 -keystore "$key" -alias peanuts-zh -storepass:env PN_ZH_KEYSTORE_PASSWORD | sha256sum | cut -d ' ' -f 1)"
+          if [[ "$cert" != "${PN_ZH_CERT_SHA256,,}" ]]; then
+            echo '::error::The certificate inside the keystore does not match the pinned fingerprint; no APK will be uploaded.'
+            exit 1
+          fi
+          "$ANDROID_SDK_ROOT/build-tools/36.0.0/apksigner" sign \
+            --ks "$key" --ks-type PKCS12 --ks-key-alias peanuts-zh \
+            --ks-pass env:PN_ZH_KEYSTORE_PASSWORD --key-pass env:PN_ZH_KEYSTORE_PASSWORD \
+            --alignment-preserved true \
+            --v1-signing-enabled false --v2-signing-enabled true --v3-signing-enabled true --v4-signing-enabled false \
+            --out "$RUNNER_TEMP/peanuts-fixed.apk" android/app/out/nxnative-android-peanuts.apk
+
+      - name: Verify package, signing, and bundled packer
+        id: verify
+        shell: bash
+        env:
+          PN_ZH_CERT_SHA256: ${{ vars.PN_ZH_CERT_SHA256 }}
+          PN_VERSION: ${{ steps.assemble.outputs.version }}
+          PN_VERSION_CODE: ${{ steps.assemble.outputs.version_code }}
+        run: |
+          set -euo pipefail
+          apk="$RUNNER_TEMP/peanuts-fixed.apk"
+          tools="$ANDROID_SDK_ROOT/build-tools/36.0.0"
+          "$tools/apksigner" verify --verbose --print-certs "$apk" | tee "$RUNNER_TEMP/apksigner.txt"
+          cert="$(sed -n 's/^Signer #[0-9][0-9]* certificate SHA-256 digest: //p' "$RUNNER_TEMP/apksigner.txt")"
+          if [[ "${cert,,}" != "${PN_ZH_CERT_SHA256,,}" ]]; then
+            echo '::error::The signed APK does not have exactly the pinned signer; no APK will be uploaded.'
+            exit 1
+          fi
+          "$tools/zipalign" -c -P 16 4 "$apk"
+          "$tools/aapt" dump badging "$apk" > "$RUNNER_TEMP/peanuts-badging.txt"
+          grep -F "package: name='dev.nxnative.android.peanutszh' versionCode='$PN_VERSION_CODE' versionName='$PN_VERSION'" "$RUNNER_TEMP/peanuts-badging.txt"
+          grep -Fx "application-label:'Peanuts Native'" "$RUNNER_TEMP/peanuts-badging.txt"
+          python peanuts/scripts/check-apk-holes.py "$apk"
+          python - "$apk" <<'PY'
+          import io, re, sys, zipfile
+          from pathlib import Path
+
+          ids = re.findall(r"(?m)^[0-9A-F]{16}$", Path("peanuts/release-titles.txt").read_text())
+          assert len(ids) == len(set(ids)) and ids, "Missing or duplicate Peanuts release titles"
+          assert {"010055D009F78000", "0100F43008C44000", "0100CD4012DCA000"} <= set(ids), "Regression: the two reference games are not in the release list"
+
+          with zipfile.ZipFile(sys.argv[1]) as apk:
+              entries = set(apk.namelist())
+              required = {
+                  'lib/arm64-v8a/libnxhost.so',
+                  'lib/arm64-v8a/libnximport.so',
+                  'lib/arm64-v8a/libnxpack.so',
+                  'lib/arm64-v8a/libdmsh_xlate.so',
+                  'lib/arm64-v8a/libpython3.14.so',
+                  'assets/pack/python.zip',
+                  'assets/pack/tools.zip',
+              }
+              assert required <= entries, f"Missing native files: {required - entries}"
+              missing_runtime = {f"assets/profiles/{i}.profile.bin" for i in ids} - entries
+              assert not missing_runtime, f"Missing Android runtime profiles: {sorted(missing_runtime)}"
+              with zipfile.ZipFile(io.BytesIO(apk.read("assets/pack/tools.zip"))) as tools:
+                  missing_build = {f"dm/games/{i}/game.tsv" for i in ids} - set(tools.namelist())
+                  assert not missing_build, f"Missing on-device build profiles: {sorted(missing_build)}"
+              dex = [apk.read(n) for n in entries if re.fullmatch(r"classes[0-9]*\.dex", n)]
+              missing_catalog = [i for i in ids if not any(i.encode() + b"\t" in d for d in dex)]
+              assert not missing_catalog, f"Missing launcher catalog rows: {missing_catalog}"
+              print(f"Confirmed {len(ids)} release titles in runtime profiles, pack tools and launcher catalog")
+              assert not any(path.lower().endswith('/lossless.dll') or path.lower() == 'lossless.dll' for path in entries)
+          PY
+          mkdir -p dist
+          apk_name="Peanuts-Native-${PN_VERSION}-zh-CN-San14PK-test-${GITHUB_SHA:0:8}.apk"
+          cp "$apk" "dist/$apk_name"
+          (cd dist && sha256sum "$apk_name")
+          echo "path=dist/$apk_name" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          path: ${{ steps.verify.outputs.path }}
+          archive: false
+          if-no-files-found: error
+          retention-days: 14
