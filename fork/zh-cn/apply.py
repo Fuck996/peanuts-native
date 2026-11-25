@@ -118,6 +118,17 @@ def apply():
             t=t.replace('((CheckBox) v).getText()', D+'.source((CheckBox) v)').replace('b.getText()',D+'.source(b)')
             t=t.replace('name.setText(title);',f'{D}.set(name, title);').replace('val.setText(names[i] +',f'val.setText({L}.tr(names[i]) +')
             t=t.replace('.setTitle(title)',f'.setTitle({L}.tr(title))').replace('.setNegativeButton("Cancel",',f'.setNegativeButton({L}.tr("Cancel"),')
+        # A fully qualified expression can be shadowed by a local variable named
+        # "dev" (e.g. AdvancedPage and UserSaves). Import the adapter types instead.
+        imports = []
+        for fqcn in (D, L):
+            if fqcn + '.' in t:
+                short = fqcn.rsplit('.', 1)[1]
+                t = t.replace(fqcn + '.', short + '.')
+                if 'import ' + fqcn + ';' not in t:
+                    imports.append('import ' + fqcn + ';')
+        if imports:
+            t = re.sub(r'(?m)^(package [\w.]+;)', lambda m: m[1] + '\n\n' + '\n'.join(imports), t, count=1)
         if t!=orig:
             p.write_text(t); changed.add(p)
     print(f'Materialized {len(mapping)} label mappings and {len(changed)} generated UI source files.')
